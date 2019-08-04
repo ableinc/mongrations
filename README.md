@@ -14,7 +14,10 @@ pip install --upgrade .
 ```
 
 # Use
-Mongrations comes with a CLI Tool as well as a class for a pythonic migration approach
+Mongrations comes with a CLI Tool as well as a class for a pythonic migration approach. PyMongo is used under
+the hood, so follow <a href="https://api.mongodb.com/python/current/tutorial.html#getting-a-collection">this documentation</a> 
+for instructions on how to create your migrations. For the environment file manager used in this tool, follow 
+<a href='https://github.com/ableinc/pydotenvs'>this repo</a>. 
 
 **CLI**
 ```bash
