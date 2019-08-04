@@ -50,3 +50,6 @@ migrations.down()
 migrations.undo()
 ```
 Run example migration in examples/ folder
+
+# Issues
+Please report all issues to repo.
