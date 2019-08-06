@@ -5,17 +5,17 @@ from mongrations.version import __version__
 
 @click.command('mongrations')
 @click.option('-M', '--migrate', default=False, type=click.BOOL,
-              help='Run MongoDB migrations')
+              help='Run migrations')
 @click.option('-C', '--create', default=False, type=click.BOOL,
-              help='Create new MongoDB migration')
+              help='Create new migration')
 @click.option('-N', '--name', default='-no-name-migration', type=click.STRING,
               help='Name for newly created migration')
 @click.option('-F', '--file_path', default=os.getcwd(), type=click.STRING,
               help='File path for newly created migration')
 @click.option('-U', '--undo', default=False, type=click.BOOL,
-              help='Undo last MongoDB migration')
+              help='Undo last migration')
 @click.option('-D', '--down', default=False, type=click.BOOL,
-              help='Clean MongoDB database')
+              help='Revert database')
 @click.version_option(version=__version__)
 def mongrations(migrate, create, name, file_path, undo, down):
     main = MongrationsCli()

@@ -4,3 +4,4 @@ dist/**
 build/**
 mongrations.egg-info/**
 **/__pycache__/**
+temp/**

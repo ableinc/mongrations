@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 import motor.motor_asyncio as motor
+import pymysql.cursors
+import psycopg2
 from mongrations.cache import Cache
 from os import getcwd, environ
 from os.path import basename
@@ -22,12 +24,12 @@ class MongrationsCli:
                 print(line)
 
     def down(self):
-        environ['MONGOGRATION_MIGRATE_STATE'] = 'DOWN'
+        environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
         migrations = self._cache.migrations_file_list()
         self._command_line_interface(migrations, 'down')
 
     def migrate(self):
-        environ['MONGOGRATION_MIGRATE_STATE'] = 'UP'
+        environ['MONGRATIONS_MIGRATE_STATE'] = 'UP'
         migrations = self._cache.migrations_file_list()
         self._command_line_interface(migrations, 'migrate')
 
@@ -35,62 +37,118 @@ class MongrationsCli:
         self._cache.new_migration(name, file_path)
     
     def undo(self):
-        environ['MONGOGRATION_MIGRATE_STATE'] = 'DOWN'
+        environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
         migration = self._cache.undo_migration()
         self._command_line_interface([migration], 'undo')
 
 
 # For Mongration Files
 class Connect:
-    def __init__(self, connection_object: dict = None):
-        self._host = None
-        self._port = None
-        self._db = None
-        self._mongo_url = None
-        self._connection_object = connection_object
+    def __init__(self, connection_object, db_service):
+        self._connection_object = connection_object if not None else {}
+        self._db_service = db_service
+        self._service_selection = None
         self._connection()
 
     def _connection(self):
+        connections = {
+            'mongo': {
+                'host': self._connection_object.get('MONGO_HOST', None) if not None else environ.get('MONGO_HOST',
+                                                                                                     None),
+                'port': self._connection_object.get('MONGO_PORT', None) if not None else environ.get('MONGO_PORT',
+                                                                                                     27017),
+                'db': self._connection_object.get('MONGO_DB', None) if not None else environ.get('MONGO_DB', None)
+            },
+            'mysql': {
+                'host': self._connection_object.get('MYSQL_HOST', None) if not None else environ.get('MYSQL_HOST',
+                                                                                                     None),
+                'user': self._connection_object.get('MYSQL_USER', None) if not None else environ.get('MYSQL_USER',
+                                                                                                     None),
+                'password': self._connection_object.get('MYSQL_PASSWORD', None) if not None else environ.get(
+                    'MYSQL_PASSWORD', None),
+                'port': self._connection_object.get('MYSQL_PORT', None) if not None else environ.get('MYSQL_PORT',
+                                                                                                     3306),
+                'db': self._connection_object.get('MYSQL_DB', None) if not None else environ.get('MYSQL_DB', None)
+            },
+            'postgres': {
+                'host': self._connection_object.get('POSTGRES_HOST', None) if not None else environ.get('POSTGRES_HOST',
+                                                                                                        None),
+                'user': self._connection_object.get('POSTGRES_USER', None) if not None else environ.get('POSTGRES_USER',
+                                                                                                        None),
+                'password': self._connection_object.get('POSTGRES_PASSWORD', None) if not None else environ.get(
+                    'POSTGRES_PASSWORD', None),
+                'port': self._connection_object.get('POSTGRES_PORT', None) if not None else environ.get('POSTGRES_PORT',
+                                                                                                        5432),
+                'db': self._connection_object.get('POSTGRES_DB', None) if not None else environ.get('POSTGRES_DB',
+                                                                                                    None)
+            }
+        }
         try:
-            if self._connection_object is None:
-                self._host = environ['MONGO_HOST']
-                self._port = environ['MONGO_PORT']
-                self._db = environ['MONGO_DB']
-            else:
-                self._host = self._connection_object.get('MONGO_HOST')
-                self._port = self._connection_object.get('MONGO_PORT')
-                self._db = self._connection_object.get('MONGO_DB')
+            for server, configs in connections.items():
+                if server == self._db_service:
+                    for value in connections[server].values():
+                        if value is None:
+                            raise KeyError
+                    self._service_selection = connections[server]
+                    environ['MONGRATIONS_CLASS_TYPE'] = server
+            if self._service_selection is None:
+                raise KeyError
         except KeyError:
-            print('KeyError: All MongoDB configurations required.')
+            print('All database configurations required.')
             sys.exit(1)
-        self._mongo_url = f'mongodb://{self._host}:{self._port}'
 
-    def mongrations_async(self):
-        client = motor.AsyncIOMotorClient(self._mongo_url)
-        return client[self._db]
+    def mongo_async(self):
+        mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
+        client = motor.AsyncIOMotorClient(mongo_url)
+        return client[self._service_selection["db"]]
 
-    def mongrations_sync(self):
-        client = MongoClient(self._mongo_url)
-        return client[self._db]
+    def mongo_sync(self):
+        mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
+        client = MongoClient(mongo_url)
+        return client[self._service_selection["db"]]
+
+    def mysql(self):
+        config = self._service_selection
+        connection = pymysql.connect(host=config['host'],
+                                     user=config['user'],
+                                     password=config['password'],
+                                     db=config['db'],
+                                     port=config['port'],
+                                     charset='utf8mb4',
+                                     cursorclass=pymysql.cursors.DictCursor)
+        return connection
+
+    def postgres(self):
+        config = self._service_selection
+        conn = psycopg2.connect(host=config['host'], database=config['db'], user=config['user'], password=config['password'])
+        return conn
 
 
 class Mongrations:
-    def __init__(self, migration_class, state: str = 'sync'):
+    def __init__(self, migration_class, state: str = 'sync', db_service: str = 'mongo', connection_obj: dict = None):
         self._migration_class = migration_class()
-        self.connect = Connect()
+        self.connect = Connect(connection_obj, db_service)
         self.db = None
         self.state = state
-        self.connection()
-        if environ['MONGOGRATION_MIGRATE_STATE'] == 'UP':
+        self.connection(db_service)
+        if environ['MONGRATIONS_MIGRATE_STATE'] == 'UP':
             self.up()
-        elif environ['MONGOGRATION_MIGRATE_STATE'] == 'DOWN':
+        elif environ['MONGRATIONS_MIGRATE_STATE'] == 'DOWN':
             self.down()
 
-    def connection(self):
-        if self.state == 'sync':
-            self.db = self.connect.mongrations_sync()
-        if self.state == 'async':
-            self.db = self.connect.mongrations_async()
+    def connection(self, db_service):
+        db_option = {
+            'mongo': {
+                'sync': self.connect.mongo_sync,
+                'async': self.connect.mongo_async
+            },
+            'mysql': self.connect.mysql,
+            'postgres': self.connect.postgres
+        }.get(db_service)
+        if isinstance(db_option, dict):
+            self.db = db_option[self.state]()
+        else:
+            self.db = db_option()
 
     def up(self):
         self._migration_class.up(self.db)

@@ -1,0 +1,7 @@
+Click==7.0
+motor==2.0.0
+pydotenvs==0.1.2
+pymongo==3.8.0
+PyMySQL==0.9.3
+requests==2.22.0
+psycopg2-binary==2.8.3

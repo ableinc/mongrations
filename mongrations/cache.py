@@ -16,6 +16,7 @@ class Cache:
             self._initial_write()
         else:
             self.initial = False
+        self._file_system_check()
 
     def _get_file_object(self):
         with open(self._file_path, 'r', encoding='utf-8') as reader:
@@ -55,6 +56,19 @@ class Cache:
                   "migrations": []
                 }
         self._write_file_obj(data)
+
+    def _file_system_check(self):
+        file_obj = self._get_file_object()
+        updated_migrations_list = file_obj['migrations']
+        updated_last_migration = file_obj['last_migration']
+        for mongration in file_obj['migrations']:
+            if not path.isfile(mongration):
+                updated_migrations_list.remove(mongration)
+                if file_obj['last_migration'] == mongration:
+                    updated_last_migration = ''
+        file_obj['migrations'] = updated_migrations_list
+        file_obj['last_migration'] = updated_last_migration
+        self._write_file_obj(file_obj)
 
     def new_migration(self, name: str, file_path):
         name = str(uuid.uuid4())[:34] + '-' + name + '.py'

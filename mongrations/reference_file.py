@@ -1,4 +1,7 @@
-from mongrations import Mongrations
+from mongrations import Mongrations, ClassType
+from pydotenv import load_env
+
+load_env()
 
 
 class Mongration:
@@ -6,11 +9,11 @@ class Mongration:
         pass
 
     @staticmethod
-    def up(db):
+    def up(db: ClassType):
         pass
 
     @staticmethod
-    def down(db):
+    def down(db: ClassType):
         pass
 
 
