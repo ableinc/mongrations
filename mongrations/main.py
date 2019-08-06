@@ -121,7 +121,7 @@ class Connect:
     def postgres(self):
         config = self._service_selection
         conn = psycopg2.connect(host=config['host'], database=config['db'], user=config['user'], password=config['password'])
-        return conn
+        return conn.cursor()
 
 
 class Mongrations:
