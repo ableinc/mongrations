@@ -145,93 +145,124 @@ class Connect:
     def _postgres(self):
         config = self._service_selection
         conn = psycopg2.connect(host=config['host'], database=config['db'], user=config['user'], password=config['password'])
-        return conn.cursor()
+        return conn
 
 
 class Database(Connect):
     def __init__(self):
         super(Connect, self).__init__()
 
-    def create_database(self, database_name):
-        if self._state == 'mongo':
-            raise AttributeError('drop_table() cannot be used with MongoDB')
-        if self._state == 'mysql':
-            try:
-                with self.db.cursor() as cursor:
-                    # Create a new record
-                    sql = f"CREATE DATABASE `{database_name}`"
-                    cursor.execute(sql)
+    def _alert(self, func_name, append=''):
+        if self._db_service == 'mongo':
+            print(f'Error: {func_name}() cannot be used with MongoDB {append if not "" else ""}.')
+            sys.exit()
 
-                self.db.commit()
-            finally:
-                self.db.close()
-        else:
-            print('Postgres N/A')
+    def create_database(self, database_name):
+        self._alert(self.create_database.__name__)
+        try:
+            with self.db.cursor() as cursor:
+                # Create a new record
+                sql = f"CREATE DATABASE `{database_name}`"
+                cursor.execute(sql)
+
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
 
     def create_table(self, table_name: str, column_info: dict):
-        if self._state == 'mongo': raise AttributeError('create_table() cannot be used with MongoDB')
-        if self._state == 'mysql':
-            try:
-                with self.db.cursor() as cursor:
-                    # Create a new record
-                    sql = f'CREATE TABLE `{table_name}` ( '
-                    for column_name, column_type in column_info.items():
-                        sql += f'{column_name} {column_type}, '
-                    sql += ')'
-                    cursor.execute(sql)
-                self.db.commit()
-            finally:
-                self.db.close()
-        else:
-            print('Postgres N/A')
+        self._alert(self.create_table.__name__)
+        try:
+            with self.db.cursor() as cursor:
+                # Create a new record
+                sql = f'CREATE TABLE `{table_name}` ( '
+                for column_name, column_type in column_info.items():
+                    sql += f'`{column_name}` {column_type}, '
+                updated_sql = sql[:-1]
+                updated_sql += ')'
+                cursor.execute(updated_sql)
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
 
     def drop_table(self, table_name: str):
-        if self._state == 'mongo':
-            raise AttributeError('drop_table() cannot be used with MongoDB')
-        if self._state == 'mysql':
-            try:
-                with self.db.cursor() as cursor:
-                    # Create a new record
-                    sql = f"DROP TABLE `{table_name}`"
-                    cursor.execute(sql)
+        self._alert(self.drop_table.__name__)
+        try:
+            with self.db.cursor() as cursor:
+                # Create a new record
+                sql = f"DROP TABLE `{table_name}`"
+                cursor.execute(sql)
 
-                self.db.commit()
-            finally:
-                self.db.close()
-        else:
-            print('Postgres N/A')
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
 
-    def add_column(self, table_name: str, column_name: str, data_type: str = 'VARCHAR(255)'):
-        if self._state == 'mongo':
-            raise AttributeError('add_column() cannot be used with MongoDB')
-        if self._state == 'mysql':
-            try:
-                with self.db.cursor() as cursor:
-                    # Create a new record
-                    sql = f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {data_type}"
-                    cursor.execute(sql)
+    def add_column(self, table_name: str, column_name: str, data_type: str = 'VARCHAR(255) NOT NULL'):
+        self._alert(self.add_column.__name__)
+        try:
+            with self.db.cursor() as cursor:
+                # Create a new record
+                sql = f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {data_type}"
+                cursor.execute(sql)
 
-                self.db.commit()
-            finally:
-                self.db.close()
-        else:
-            print('Postgres N/A')
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
 
     def remove_column(self, table_name: str, column_name: str):
-        if self._state == 'mongo':
-            raise AttributeError('remove_column() cannot be used with MongoDB')
-        if self._state == 'mysql':
-            try:
-                with self.db.cursor() as cursor:
-                    # Create a new record
-                    sql = f"ALTER TABLE `{table_name}` DROP COLUMN `{column_name}`"
-                    cursor.execute(sql)
+        self._alert(self.remove_column.__name__)
+        try:
+            with self.db.cursor() as cursor:
+                # Create a new record
+                sql = f"ALTER TABLE `{table_name}` DROP COLUMN `{column_name}`"
+                cursor.execute(sql)
 
-                self.db.commit()
-            finally:
-                self.db.close()
-        else:
-            print('Postgres N/A')
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
+
+    def delete_from(self, table_name, column_name, query):
+        self._alert(self.delete_from.__name__, 'or MySQL (Postgres Only)')
+        try:
+            with self.db.cursor() as cursor:
+                # Delete a record
+                sql = f"DELETE FROM `{table_name}` WHERE `{column_name}` = {query}"
+                cursor.execute(sql)
+
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
+
+    def insert_into(self, table_name, column_info):
+        self._alert(self.insert_into.__name__)
+        try:
+            with self.db.cursor() as cursor:
+                sql = f'INSERT INTO `{table_name}` ('
+                for column_name in column_info.keys():
+                    sql += f'`{column_name}`,'
+                s_ql = sql[:-1]
+                s_ql += ') VALUES ('
+                for value in column_info.values():
+                    s_ql += f'`{value}`,'
+                updated_sql = s_ql[:-1]
+                updated_sql += ')'
+                cursor.execute(updated_sql)
+            self.db.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print('Error: ', error)
+        finally:
+            self.db.close()
 
 
 class Mongrations:
@@ -240,10 +271,14 @@ class Mongrations:
         self.state = state
         self.connection_object = connection_obj
         self.db_service = db_service
-        if environ['MONGRATIONS_MIGRATE_STATE'] == 'UP':
-            self._up()
-        elif environ['MONGRATIONS_MIGRATE_STATE'] == 'DOWN':
-            self._down()
+        try:
+            if environ['MONGRATIONS_MIGRATE_STATE'] == 'UP':
+                self._up()
+            elif environ['MONGRATIONS_MIGRATE_STATE'] == 'DOWN':
+                self._down()
+        except KeyError:
+            print('Migrations must be run with CLI tool or MongrationsCli class.')
+            sys.exit()
 
     def _up(self):
         self._migration_class._set(self.connection_object, self.db_service, self.state)

@@ -48,7 +48,7 @@ setup(
     version=__version__,
     author="AbleInc - Jaylen Douglas",
     author_email="douglas.jaylen@gmail.com",
-    description="MongoDB Migrations for Python 3.5+",
+    description="Migrations tool for Python 3.5+",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ableinc/mongrations",

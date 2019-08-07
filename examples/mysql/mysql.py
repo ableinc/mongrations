@@ -10,22 +10,15 @@ class Mongration(Database):
         super(Database, self).__init__()
 
     def up(self):
-        try:
-            with self.db.cursor() as cursor:
-                # Create a new record
-                sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
-                cursor.execute(sql, ('webmaster@python.org', 'very-secret'))
-
-            self.db.commit()
-
-            with self.db.cursor() as cursor:
-                # Read a single record
-                sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
-                cursor.execute(sql, ('webmaster@python.org',))
-                result = cursor.fetchone()
-                print(result)
-        finally:
-            self.db.close()
+        column_info = {
+            'id': 'INT NOT NULL AUTO_INCREMENT',
+            'firstName': 'VARCHAR(255) NOT NULL',
+            'lastName': 'VARCHAR(255) NOT NULL',
+            'username': 'VARCHAR(255) NOT NULL',
+            'isActive': 'BOOLEAN'
+        }
+        self.create_table('users', column_info)
+        self.add_column('users', 'email')
 
     def down(self):
         self.drop_table('users')

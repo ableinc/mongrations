@@ -104,4 +104,5 @@ Please report all issues to repo.
 You can install psycopg2 from source via setup.py develop build or refer to their repo.
 
 # Up Next
-Full API documentation.
+Full API documentation. <br />
+Unit Tests.
