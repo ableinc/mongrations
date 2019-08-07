@@ -53,34 +53,33 @@ class Connect:
     def _connection(self):
         connections = {
             'mongo': {
-                'host': self._connection_object.get('MONGO_HOST', None) if not None else environ.get('MONGO_HOST',
+                'host': environ.get('MONGO_HOST', None) if not None else self._connection_object.get('MONGO_HOST',
                                                                                                      None),
-                'port': self._connection_object.get('MONGO_PORT', None) if not None else environ.get('MONGO_PORT',
-                                                                                                     27017),
-                'db': self._connection_object.get('MONGO_DB', None) if not None else environ.get('MONGO_DB', None)
+                'port': environ.get('MONGO_PORT', 27017) if not None else self._connection_object.get('MONGO_PORT',
+                                                                                                      None),
+                'db': environ.get('MONGO_DB', None) if not None else self._connection_object.get('MONGO_DB', None)
             },
             'mysql': {
-                'host': self._connection_object.get('MYSQL_HOST', None) if not None else environ.get('MYSQL_HOST',
+                'host': environ.get('MYSQL_HOST', None) if not None else self._connection_object.get('MYSQL_HOST',
                                                                                                      None),
-                'user': self._connection_object.get('MYSQL_USER', None) if not None else environ.get('MYSQL_USER',
+                'user': environ.get('MYSQL_USER', None) if not None else self._connection_object.get('MYSQL_USER',
                                                                                                      None),
-                'password': self._connection_object.get('MYSQL_PASSWORD', None) if not None else environ.get(
+                'password': environ.get('MYSQL_PASSWORD', None) if not None else self._connection_object.get(
                     'MYSQL_PASSWORD', None),
-                'port': self._connection_object.get('MYSQL_PORT', None) if not None else environ.get('MYSQL_PORT',
-                                                                                                     3306),
-                'db': self._connection_object.get('MYSQL_DB', None) if not None else environ.get('MYSQL_DB', None)
+                'port': environ.get('MYSQL_PORT', 3306) if not None else self._connection_object.get('MYSQL_PORT',
+                                                                                                     None),
+                'db': environ.get('MYSQL_DB', None) if not None else self._connection_object.get('MYSQL_DB', None)
             },
             'postgres': {
-                'host': self._connection_object.get('POSTGRES_HOST', None) if not None else environ.get('POSTGRES_HOST',
+                'host': environ.get('POSTGRES_HOST', None) if not None else self._connection_object.get('POSTGRES_HOST',
                                                                                                         None),
-                'user': self._connection_object.get('POSTGRES_USER', None) if not None else environ.get('POSTGRES_USER',
+                'user': environ.get('POSTGRES_USER', None) if not None else self._connection_object.get('POSTGRES_USER',
                                                                                                         None),
-                'password': self._connection_object.get('POSTGRES_PASSWORD', None) if not None else environ.get(
+                'password': environ.get('POSTGRES_PASSWORD', None) if not None else self._connection_object.get(
                     'POSTGRES_PASSWORD', None),
-                'port': self._connection_object.get('POSTGRES_PORT', None) if not None else environ.get('POSTGRES_PORT',
-                                                                                                        5432),
-                'db': self._connection_object.get('POSTGRES_DB', None) if not None else environ.get('POSTGRES_DB',
-                                                                                                    None)
+                'port': environ.get('POSTGRES_PORT', 5432) if not None else self._connection_object.get('POSTGRES_PORT',
+                                                                                                        None),
+                'db': environ.get('POSTGRES_DB', None) if not None else self._connection_object.get('POSTGRES_DB', None)
             }
         }
         try:
