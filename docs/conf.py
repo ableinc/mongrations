@@ -13,7 +13,11 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import mongrations
 
+source_suffix = ['.rst', '.md']
+
+master_doc = 'index'
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +26,8 @@ copyright = '2019, Jaylen Douglas - AbleInc'
 author = 'Jaylen Douglas - AbleInc'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.5'
+release = mongrations.__version__
+version = mongrations.__version__
 
 
 # -- General configuration ---------------------------------------------------
