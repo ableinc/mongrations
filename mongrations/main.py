@@ -15,6 +15,9 @@ class MongrationsCli:
 
     @staticmethod
     def _command_line_interface(migrations: list, state: str):
+        if len(migrations) == 0:
+            print('No migrations to run.')
+            sys.exit()
         print(f'{state.upper()}: Running {len(migrations)} migration{"" if len(migrations) <= 1 else "s"}...')
         for migration in migrations:
             command = shlex.split(f'python3 {migration}')
@@ -22,6 +25,7 @@ class MongrationsCli:
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, env=environ.copy())
             for line in io.TextIOWrapper(proc.stdout, encoding='utf8', newline=''):
                 print(line)
+        print('Migrations complete.')
 
     def down(self):
         environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
@@ -35,7 +39,7 @@ class MongrationsCli:
 
     def create(self, file_path=getcwd(), name='-no-name-migration'):
         self._cache.new_migration(name, file_path)
-    
+
     def undo(self):
         environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
         migration = self._cache.undo_migration()
@@ -44,11 +48,12 @@ class MongrationsCli:
 
 # For Mongration Files
 class Connect:
-    def __init__(self, connection_object, db_service):
-        self._connection_object = connection_object if not None else {}
-        self._db_service = db_service
+    def __init__(self):
+        self._connection_object = None
+        self._db_service = None
         self._service_selection = None
-        self._connection()
+        self.db = None
+        self._state = None
 
     def _connection(self):
         connections = {
@@ -89,24 +94,44 @@ class Connect:
                         if value is None:
                             raise KeyError
                     self._service_selection = connections[server]
-                    environ['MONGRATIONS_CLASS_TYPE'] = server
             if self._service_selection is None:
                 raise KeyError
         except KeyError:
             print('All database configurations required.')
             sys.exit(1)
 
-    def mongo_async(self):
+    def _set(self, connection_object, db_service, state):
+        self._connection_object = connection_object if not None else {}
+        self._db_service = db_service
+        self._state = state
+        self._connection()
+        self._get_db()
+
+    def _get_db(self):
+        db_option = {
+            'mongo': {
+                'sync': self._mongo_sync,
+                'async': self._mongo_async
+            },
+            'mysql': self._mysql,
+            'postgres': self._postgres
+        }.get(self._db_service)
+        if isinstance(db_option, dict):
+            self.db = db_option[self._state]()
+        else:
+            self.db = db_option()
+
+    def _mongo_async(self):
         mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
         client = motor.AsyncIOMotorClient(mongo_url)
         return client[self._service_selection["db"]]
 
-    def mongo_sync(self):
+    def _mongo_sync(self):
         mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
         client = MongoClient(mongo_url)
         return client[self._service_selection["db"]]
 
-    def mysql(self):
+    def _mysql(self):
         config = self._service_selection
         connection = pymysql.connect(host=config['host'],
                                      user=config['user'],
@@ -117,44 +142,113 @@ class Connect:
                                      cursorclass=pymysql.cursors.DictCursor)
         return connection
 
-    def postgres(self):
+    def _postgres(self):
         config = self._service_selection
         conn = psycopg2.connect(host=config['host'], database=config['db'], user=config['user'], password=config['password'])
         return conn.cursor()
 
 
+class Database(Connect):
+    def __init__(self):
+        super(Connect, self).__init__()
+
+    def create_database(self, database_name):
+        if self._state == 'mongo':
+            raise AttributeError('drop_table() cannot be used with MongoDB')
+        if self._state == 'mysql':
+            try:
+                with self.db.cursor() as cursor:
+                    # Create a new record
+                    sql = f"CREATE DATABASE `{database_name}`"
+                    cursor.execute(sql)
+
+                self.db.commit()
+            finally:
+                self.db.close()
+        else:
+            print('Postgres N/A')
+
+    def create_table(self, table_name: str, column_info: dict):
+        if self._state == 'mongo': raise AttributeError('create_table() cannot be used with MongoDB')
+        if self._state == 'mysql':
+            try:
+                with self.db.cursor() as cursor:
+                    # Create a new record
+                    sql = f'CREATE TABLE `{table_name}` ( '
+                    for column_name, column_type in column_info.items():
+                        sql += f'{column_name} {column_type}, '
+                    sql += ')'
+                    cursor.execute(sql)
+                self.db.commit()
+            finally:
+                self.db.close()
+        else:
+            print('Postgres N/A')
+
+    def drop_table(self, table_name: str):
+        if self._state == 'mongo':
+            raise AttributeError('drop_table() cannot be used with MongoDB')
+        if self._state == 'mysql':
+            try:
+                with self.db.cursor() as cursor:
+                    # Create a new record
+                    sql = f"DROP TABLE `{table_name}`"
+                    cursor.execute(sql)
+
+                self.db.commit()
+            finally:
+                self.db.close()
+        else:
+            print('Postgres N/A')
+
+    def add_column(self, table_name: str, column_name: str, data_type: str = 'VARCHAR(255)'):
+        if self._state == 'mongo':
+            raise AttributeError('add_column() cannot be used with MongoDB')
+        if self._state == 'mysql':
+            try:
+                with self.db.cursor() as cursor:
+                    # Create a new record
+                    sql = f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {data_type}"
+                    cursor.execute(sql)
+
+                self.db.commit()
+            finally:
+                self.db.close()
+        else:
+            print('Postgres N/A')
+
+    def remove_column(self, table_name: str, column_name: str):
+        if self._state == 'mongo':
+            raise AttributeError('remove_column() cannot be used with MongoDB')
+        if self._state == 'mysql':
+            try:
+                with self.db.cursor() as cursor:
+                    # Create a new record
+                    sql = f"ALTER TABLE `{table_name}` DROP COLUMN `{column_name}`"
+                    cursor.execute(sql)
+
+                self.db.commit()
+            finally:
+                self.db.close()
+        else:
+            print('Postgres N/A')
+
+
 class Mongrations:
     def __init__(self, migration_class, state: str = 'sync', db_service: str = 'mongo', connection_obj: dict = None):
         self._migration_class = migration_class()
-        self.connect = Connect(connection_obj, db_service)
-        self.db = None
         self.state = state
-        self.connection(db_service)
+        self.connection_object = connection_obj
+        self.db_service = db_service
         if environ['MONGRATIONS_MIGRATE_STATE'] == 'UP':
-            self.up()
+            self._up()
         elif environ['MONGRATIONS_MIGRATE_STATE'] == 'DOWN':
-            self.down()
+            self._down()
 
-    def connection(self, db_service):
-        db_option = {
-            'mongo': {
-                'sync': self.connect.mongo_sync,
-                'async': self.connect.mongo_async
-            },
-            'mysql': self.connect.mysql,
-            'postgres': self.connect.postgres
-        }.get(db_service)
-        if isinstance(db_option, dict):
-            self.db = db_option[self.state]()
-        else:
-            self.db = db_option()
+    def _up(self):
+        self._migration_class._set(self.connection_object, self.db_service, self.state)
+        self._migration_class.up()
 
-    def up(self):
-        self._migration_class.up(self.db)
-
-    def down(self):
-        self._migration_class.down(self.db)
-
-
-
-
+    def _down(self):
+        self._migration_class._set(self.connection_object, self.db_service, self.state)
+        self._migration_class.down()

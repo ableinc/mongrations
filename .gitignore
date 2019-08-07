@@ -5,3 +5,5 @@ build/**
 mongrations.egg-info/**
 **/__pycache__/**
 temp/**
+mongrations/data/**
+old.txt

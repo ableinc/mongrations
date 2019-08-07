@@ -1,19 +1,17 @@
-from mongrations import Mongrations, ClassType
+from mongrations import Mongrations, Database
 from pydotenv import load_env
 
 load_env()
 
 
-class Mongration:
+class Mongration(Database):
     def __init__(self):
+        super(Database, self).__init__()
+
+    def up(self):
         pass
 
-    @staticmethod
-    def up(db: ClassType):
-        pass
-
-    @staticmethod
-    def down(db: ClassType):
+    def down(self):
         pass
 
 
