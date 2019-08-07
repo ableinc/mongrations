@@ -37,8 +37,8 @@ class MongrationsCli:
         migrations = self._cache.migrations_file_list()
         self._command_line_interface(migrations, 'migrate')
 
-    def create(self, file_path=getcwd(), name='-no-name-migration'):
-        self._cache.new_migration(name, file_path)
+    def create(self, directory='migrations', name='-no-name-migration'):
+        self._cache.new_migration(name, directory)
 
     def undo(self):
         environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'

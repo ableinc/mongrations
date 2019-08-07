@@ -1,6 +1,6 @@
 # Mongrations
 ![alt text](https://img.icons8.com/ios/50/000000/database-restore.png "Mongrations Logo")
-A migrations tool for Python 3.5+. Mongrations started as a MongoDB migrations tool but has introduced MySQL & Postgres
+A migrations tool for Python 3.6+. Mongrations started as a MongoDB migrations tool but has introduced MySQL & Postgres
 as compatible servers for the Mongrations tool.
 
 # Steps
@@ -61,6 +61,8 @@ the hood, so follow <a href="https://api.mongodb.com/python/current/tutorial.htm
 <a href="https://github.com/PyMySQL/PyMySQL">PyMySQL</a>'s, or <a href="https://github.com/psycopg/psycopg2">Psycopg2</a>'s documentation 
 for instructions on how to create your migrations. For the environment variable tool used in this application, follow 
 <a href='https://github.com/ableinc/pydotenvs'>this repo</a> (its also installed with this package).
+
+Refer to Mongrations <a href="https://mongrations.readthedocs.io/en/latest/">documentation</a> for more information.
 
 **CLI**
 ```bash

@@ -74,9 +74,13 @@ class Cache:
         file_obj['last_migration'] = updated_last_migration
         self._write_file_obj(file_obj)
 
-    def new_migration(self, name: str, file_path):
+    def new_migration(self, name: str, directory):
+        try:
+            makedirs(path.join(getcwd(), directory))
+        except FileExistsError:
+            pass
         name = str(uuid.uuid4())[:34] + '-' + name + '.py'
-        migration_path = path.join(file_path, name)
+        migration_path = path.join(getcwd(), directory + '/' + name)
         reference_file = open(path.join(getcwd(), 'mongrations/reference_file.py'), 'r', encoding='utf-8')
         with open(migration_path, 'w', encoding='utf-8') as migration_file:
             migration_file.write(reference_file.read())
