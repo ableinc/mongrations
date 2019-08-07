@@ -10,7 +10,15 @@ class Mongration(Database):
         super(Database, self).__init__()
 
     def up(self):
-        self.create_table('users')
+        column_info = {
+            'id': 'INT NOT NULL AUTO_INCREMENT',
+            'firstName': 'VARCHAR(255) NOT NULL',
+            'lastName': 'VARCHAR(255) NOT NULL',
+            'username': 'VARCHAR(255) NOT NULL',
+            'isActive': 'BOOLEAN'
+        }
+        self.create_table('users', column_info)
+        self.remove_column('users', 'isActive')
 
     def down(self):
         self.drop_table('users')
