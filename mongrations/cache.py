@@ -1,6 +1,6 @@
 # Various Read, Write & Fetch functions for cached data
 import os.path as path
-from os import getcwd, remove
+from os import getcwd, remove, makedirs
 import json
 from datetime import datetime
 import uuid
@@ -10,6 +10,10 @@ class Cache:
     def __init__(self, verbose: bool = False):
         self._verbose = verbose
         self._file_path = path.join(getcwd(), 'mongrations/data/cache.json')
+        try:
+            makedirs(path.join(getcwd(), 'mongrations/data'))
+        except FileExistsError:
+            pass
         self.initial = None
         if not path.isfile(self._file_path):
             self.initial = True

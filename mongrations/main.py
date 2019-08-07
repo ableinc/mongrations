@@ -15,6 +15,9 @@ class MongrationsCli:
 
     @staticmethod
     def _command_line_interface(migrations: list, state: str):
+        if len(migrations) == 0:
+            print('No migrations to run.')
+            sys.exit()
         print(f'{state.upper()}: Running {len(migrations)} migration{"" if len(migrations) <= 1 else "s"}...')
         for migration in migrations:
             command = shlex.split(f'python3 {migration}')
@@ -22,6 +25,7 @@ class MongrationsCli:
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, env=environ.copy())
             for line in io.TextIOWrapper(proc.stdout, encoding='utf8', newline=''):
                 print(line)
+        print('Migrations complete.')
 
     def down(self):
         environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
@@ -50,7 +54,6 @@ class Connect:
         self._service_selection = None
         self.db = None
         self._state = None
-        self._connection()
 
     def _connection(self):
         connections = {
@@ -78,26 +81,22 @@ class Connect:
         }
         try:
             for server, configs in connections.items():
-                print(server, self._db_service)
                 if server == self._db_service:
                     for value in connections[server].values():
                         if value is None:
-                            print('value')
                             raise KeyError
-                    print(connections[server])
                     self._service_selection = connections[server]
             if self._service_selection is None:
-                print('service selection')
                 raise KeyError
         except KeyError:
             print('All database configurations required.')
             sys.exit(1)
 
     def _set(self, connection_object, db_service, state):
-        print('setting')
         self._connection_object = connection_object if not None else {}
         self._db_service = db_service
         self._state = state
+        self._connection()
         self._get_db()
 
     def _get_db(self):
