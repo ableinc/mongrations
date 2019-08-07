@@ -1,11 +1,11 @@
 from pymongo.database import Database
-from pymysql.cursors import Cursor
+from pymysql.connections import Connection
 from psycopg2.extensions import cursor
 from os import environ
 
 db_type = {
     'mongo': Database,
-    'mysql': Cursor,
+    'mysql': Connection,
     'postgres': cursor
-}.get(environ.get('MONGRATIONS_CLASS_TYPE'), 'mongo')
+}.get(environ.get('MONGRATIONS_CLASS_TYPE'))
 ClassType = db_type
