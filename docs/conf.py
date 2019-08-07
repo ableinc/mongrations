@@ -10,16 +10,22 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+
+
+# Ensure that mongrations is present in the path, to allow sphinx-apidoc to
+# autogenerate documentation from docstrings
+root_directory = os.path.dirname(os.getcwd())
+sys.path.insert(0, root_directory)
+
 import mongrations
+
+# -- Project information -----------------------------------------------------
 
 source_suffix = ['.rst', '.md']
 
 master_doc = 'index'
-
-# -- Project information -----------------------------------------------------
 
 project = 'Mongrations'
 copyright = '2019, Jaylen Douglas - AbleInc'
