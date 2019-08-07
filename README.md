@@ -3,7 +3,7 @@
 A migrations tool for Python 3.6+. Mongrations started as a MongoDB migrations tool but has introduced MySQL & Postgres
 as compatible servers for the Mongrations tool.
 
-# Steps
+# Getting Started
 1 . Generate a migration file
 ```bash
 mongrations -C true --name insert-into-members
@@ -106,5 +106,4 @@ Please report all issues to repo.
 You can install psycopg2 from source via setup.py develop build or refer to their repo.
 
 # Up Next
-Full API documentation. <br />
 Unit Tests.
