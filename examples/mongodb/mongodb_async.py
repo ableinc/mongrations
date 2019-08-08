@@ -2,7 +2,7 @@ from mongrations import Mongrations, Database
 from pydotenv import load_env, load_env_object
 
 # load_env()  # connect via environment variables (default)
-config = load_env_object()  # connect via dictionary of environment variables
+config = load_env_object('.env-example-example-example')  # by default it looks for .env-example-example in the current directory
 
 
 class Mongration(Database):

@@ -92,7 +92,7 @@ from mongrations import MongrationsCli
 
 migrations = MongrationsCli()
 
-migrations.create(file_path='file/path', name='file_name')
+migrations.create(directory='migrations', name='file_name')
 migrations.migrate()
 migrations.down()
 migrations.undo()
