@@ -3,7 +3,7 @@ import motor.motor_asyncio as motor
 import pymysql.cursors
 import psycopg2
 from mongrations.cache import Cache
-from os import getcwd, environ
+from os import environ
 from os.path import basename
 import subprocess, shlex, io, sys
 

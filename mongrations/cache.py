@@ -1,6 +1,6 @@
 # Various Read, Write & Fetch functions for cached data
 import os.path as path
-from os import getcwd, remove, makedirs
+from os import remove, makedirs, getcwd
 import json
 from datetime import datetime
 import uuid
@@ -9,11 +9,7 @@ import uuid
 class Cache:
     def __init__(self, verbose: bool = False):
         self._verbose = verbose
-        self._file_path = path.join(getcwd(), 'mongrations/data/cache.json')
-        try:
-            makedirs(path.join(getcwd(), 'mongrations/data'))
-        except FileExistsError:
-            pass
+        self._file_path = 'data/cache.json'
         self.initial = None
         if not path.isfile(self._file_path):
             self.initial = True
@@ -79,9 +75,9 @@ class Cache:
             makedirs(path.join(getcwd(), directory))
         except FileExistsError:
             pass
-        name = str(uuid.uuid4())[:34] + '-' + name + '.py'
+        name = str(uuid.uuid4())[:16] + '-' + name + '.py'
         migration_path = path.join(getcwd(), directory + '/' + name)
-        reference_file = open(path.join(getcwd(), 'mongrations/reference_file.py'), 'r', encoding='utf-8')
+        reference_file = open('data/reference_file.txt', 'r', encoding='utf-8')
         with open(migration_path, 'w', encoding='utf-8') as migration_file:
             migration_file.write(reference_file.read())
         reference_file.close()

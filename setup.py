@@ -55,6 +55,7 @@ setup(
     keywords=['migrations', 'python3', 'automation', 'database', 'json', 'nosql', 'python', 'database tool',
               'automation tool', 'open source', 'mongodb', 'mysql', 'postgres', 'sql'],
     packages=['mongrations'],
+    data_files=[('data', ['data/reference_file.txt'])],
     entry_points='''
         [console_scripts]
         mongrations=mongrations.cli:mongrations

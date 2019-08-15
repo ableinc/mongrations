@@ -10,9 +10,9 @@ build/**
 mongrations.egg-info/**
 **/__pycache__/**
 temp/**
-mongrations/data/**
 old.txt
 docs/_build/**
 docs/_templates/**
 migrations/**
 .DS_Store
+data/cache.json
