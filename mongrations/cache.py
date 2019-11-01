@@ -3,13 +3,29 @@ import os.path as path
 from os import remove, makedirs, getcwd
 import json
 from datetime import datetime
-import uuid
+import uuid, pkg_resources
+from pathlib import Path
+
+
+def get_filepath():
+    import sys, getpass
+    filepath = {
+        'darwin': Path(f'/Users/{getpass.getuser()}/.mongrations/cache.json'),
+        'windows': Path('C:/Users/Programs Files/.mongrations/cache.json')
+    }.get(sys.platform)
+    if not path.isdir(filepath.parent):
+        try:
+            makedirs(filepath.parent)
+        except FileExistsError:
+            pass
+    return filepath
 
 
 class Cache:
     def __init__(self, verbose: bool = False):
         self._verbose = verbose
-        self._file_path = 'data/cache.json'
+        self._file_path = get_filepath()
+        self._reference_file = pkg_resources.resource_filename('mongrations', 'data/reference_file.txt')
         self.initial = None
         if not path.isfile(self._file_path):
             self.initial = True
@@ -26,10 +42,15 @@ class Cache:
         new_data = self._collect_meta_data(data, migration_name)
         try:
             with open(self._file_path, 'w', encoding='utf-8') as writer:
-                json_obj = json.dumps(new_data, indent=4, sort_keys=True)
+                json_obj = json.dumps(new_data, indent=2, sort_keys=True)
                 writer.write(json_obj)
         except json.decoder.JSONDecodeError:
-            remove(self._file_path)
+            try:
+                remove(self._file_path)
+            except OSError:
+                pass
+            if self._verbose:
+                print(f'{self._file_path} could not be saved. Internal error occurred when creating JSON object.')
 
     def _collect_meta_data(self, data, migration_name=''):
         new_data = data
@@ -77,7 +98,7 @@ class Cache:
             pass
         name = str(uuid.uuid4())[:16] + '-' + name + '.py'
         migration_path = path.join(getcwd(), directory + '/' + name)
-        reference_file = open('data/reference_file.txt', 'r', encoding='utf-8')
+        reference_file = open(self._reference_file, 'r', encoding='utf-8')
         with open(migration_path, 'w', encoding='utf-8') as migration_file:
             migration_file.write(reference_file.read())
         reference_file.close()

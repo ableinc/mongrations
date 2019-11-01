@@ -19,17 +19,18 @@ from mongrations.version import __version__
 @click.version_option(version=__version__)
 def mongrations(migrate, create, name, directory, undo, down):
     main = MongrationsCli()
-    if migrate:
-        main.migrate()
-        sys.exit()
-    if create:
-        main.create(directory=directory, name=name)
-        sys.exit()
-    if undo:
-        main.undo()
-        sys.exit()
-    if down:
-        main.down()
+    try:
+        if migrate:
+            main.migrate()
+        if create:
+            main.create(directory=directory, name=name)
+        if undo:
+            main.undo()
+        if down:
+            main.down()
+    except Exception as e:
+        print(e)
+    finally:
         sys.exit()
 
 
