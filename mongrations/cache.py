@@ -25,7 +25,7 @@ class Cache:
     def __init__(self, verbose: bool = False):
         self._verbose = verbose
         self._file_path = get_filepath()
-        self._reference_file = pkg_resources.resource_filename('mongrations', 'data/reference_file.txt')
+        self._reference_file = pkg_resources.resource_filename('mongrations', 'data/template.txt')
         self.initial = None
         if not path.isfile(self._file_path):
             self.initial = True
@@ -115,3 +115,8 @@ class Cache:
     def migrations_file_list(self):
         cache = self._get_file_object()
         return cache['migrations']
+
+    def inspect_cache(self):
+        self._file_system_check()
+        cache = self._get_file_object()
+        print(cache)

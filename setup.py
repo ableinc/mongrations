@@ -1,14 +1,14 @@
 import zipfile, io, os, subprocess, shlex, shutil, sys
 import os.path as path
 from setuptools import setup, find_packages
-from setuptools.command.develop import develop
-from mongrations import __version__
-
+from setuptools.command.install import install
+from time import sleep
+import requests
 try:
-    import requests
+    from mongrations.version import __version__
 except ImportError:
-    print('Please install requests library.')
-    sys.exit()
+    from mongrations import __version__
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -17,15 +17,23 @@ with open('requirements.txt', 'r') as reqs:
     dependencies = reqs.readlines()
 
 
-class PostInstallCommand(develop):
+class InstallWrapper(install):
     psycopg2_url = 'https://github.com/psycopg/psycopg2/archive/master.zip'
         
     def run(self):
+        self.install_postgres()
+        install.run(self)
+    
+    def install_postgres(self):
         # Install Postgres DB Python Tool
         save_dir = os.path.join(str(os.getcwd()) + '/temp/')
+        print('You will be prompted to install Postgres dependencies. One moment...')
+        sleep(3)
         choice = input('Install psycopg2 from source? (y/n) ')
         if choice.lower() == 'y':
-            path_ = input('path to pg_config > ')
+            path_ = input('path to pg_config (default: current directory) > ')
+            if path_ == '':
+                path_ = os.getcwd()
             sys.path.append(path_)
             try:
                 # Make Directory and Download Driver
@@ -49,7 +57,6 @@ class PostInstallCommand(develop):
             finally:
                 print('Installation complete.')
                 shutil.rmtree(save_dir, True)
-        develop.run(self)
 
 
 setup(
@@ -57,25 +64,26 @@ setup(
     version=__version__,
     author="AbleInc - Jaylen Douglas",
     author_email="douglas.jaylen@gmail.com",
-    description="Migrations tool for Python 3.5+",
+    description="Mongrations; a database migration tool for Python 3.6 and above.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ableinc/mongrations",
     keywords=['migrations', 'python3', 'automation', 'database', 'json', 'nosql', 'python', 'database tool',
               'automation tool', 'open source', 'mongodb', 'mysql', 'postgres', 'sql'],
     packages=find_packages(),
+    include_package_data=True,
     package_data={
-      'mongrations': ['mongrations/data/reference_file.txt']
+      'mongrations': ['mongrations/data/template.txt']
     },
     data_files=[
-        ('/mongrations/data', [path.join('mongrations/data', 'reference_file.txt')])
+        ('/mongrations/data', [path.join('mongrations/data', 'template.txt')])
     ],
     entry_points='''
         [console_scripts]
-        mongrations=mongrations.cli:mongrations
+        mongrations=mongrations.cli:cli
     ''',
     install_requires=dependencies,
-    cmdclass={'develop': PostInstallCommand},
+    cmdclass={'develop': InstallWrapper},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

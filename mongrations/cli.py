@@ -1,38 +1,51 @@
 import click, sys
-from mongrations.main import MongrationsCli
-from mongrations.version import __version__
+try:
+    from mongrations.main import MongrationsCli
+    from mongrations.version import __version__
+except Exception:
+    from .main import MongrationsCli
+    from .version import __version__
 
+main = MongrationsCli()
 
-@click.command('mongrations')
-@click.option('-M', '--migrate', default=False, type=click.BOOL,
-              help='Run migrations')
-@click.option('-C', '--create', default=False, type=click.BOOL,
-              help='Create new migration')
-@click.option('-N', '--name', default='-no-name-migration', type=click.STRING,
-              help='Name for newly created migration')
-@click.option('--directory', default='migrations', type=click.STRING,
-              help='File path for newly created migration')
-@click.option('-U', '--undo', default=False, type=click.BOOL,
-              help='Undo last migration')
-@click.option('-D', '--down', default=False, type=click.BOOL,
-              help='Revert database')
+@click.group()
 @click.version_option(version=__version__)
-def mongrations(migrate, create, name, directory, undo, down):
-    main = MongrationsCli()
-    try:
-        if migrate:
-            main.migrate()
-        if create:
-            main.create(directory=directory, name=name)
-        if undo:
-            main.undo()
-        if down:
-            main.down()
-    except Exception as e:
-        print(e)
-    finally:
-        sys.exit()
+def cli():
+    """Mongrations; a database migration tool for Python 3.6 and above."""
+    pass
+
+
+@cli.command()
+def migrate():
+    main.migrate()
+
+
+@cli.command()
+@click.argument('name', nargs=1)
+@click.argument('directory', nargs=-1)
+def create(name, directory):
+    if len(directory) == 0:
+        directory = 'migrations'
+    
+    if len(name) == 0:
+        name = 'no-name-migration'
+    main.create(directory=directory, name=name)
+
+
+@cli.command()
+def undo():
+    main.undo()
+
+
+@cli.command()
+def down():
+    main.down()
+
+
+@cli.command()
+def inspect():
+    main.inspector()
 
 
 if __name__ == '__main__':
-    mongrations()
+    cli()

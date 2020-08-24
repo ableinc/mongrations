@@ -18,13 +18,13 @@ MYSQL_DB='mongrations_test'
 ```
 ## 3. Create a migration file
 ```bash
-mongrations -C true --name create-members-table
+mongrations create create-members-table
 ```
 
 ## 4. Edit migrations
 ```python
 from mongrations import Mongrations, Database
-from pydotenv import load_env
+from pydotenvs import load_env
 
 load_env()  # this will automatically grab your environment variables
 
@@ -52,6 +52,6 @@ Mongrations(Mongration, 'sync', db_service='mysql')
 ```
 ## 5. Run migrations
 ```bash
-mongrations -M true
+mongrations migrate
 ```
 

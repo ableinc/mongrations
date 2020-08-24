@@ -1,5 +1,5 @@
 from mongrations import Mongrations, Database
-from pydotenv import load_env, load_env_object
+from pydotenvs import load_env, load_env_object
 
 load_env('.env-example')  # by default it looks for .env in the current directory
 # config = load_env_object()  # connect via dictionary of environment variables [ i.e Mongrations(config) ]

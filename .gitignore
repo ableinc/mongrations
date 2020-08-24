@@ -14,5 +14,6 @@ old.txt
 docs/_build/**
 docs/_templates/**
 migrations/**
+.mongrations/**
 .DS_Store
 mongrations/data/cache.json
