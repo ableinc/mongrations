@@ -13,9 +13,6 @@ except ImportError:
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('requirements.txt', 'r') as reqs:
-    dependencies = reqs.readlines()
-
 
 class InstallWrapper(install):
     psycopg2_url = 'https://github.com/psycopg/psycopg2/archive/master.zip'
@@ -82,7 +79,7 @@ setup(
         [console_scripts]
         mongrations=mongrations.cli:cli
     ''',
-    install_requires=dependencies,
+    install_requires=['Click', 'motor', 'pydotenvs', 'pymongo', 'PyMySQL', 'requests'],
     cmdclass={'develop': InstallWrapper},
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -51,7 +51,7 @@ pip install --upgrade mongrations
 ```
 or install locally
 ```bash
-sudo python setup.py install
+python setup.py install
 ```
 
 # Use
