@@ -1,9 +1,9 @@
 from os import environ
+from pymongo import MongoClient
+import motor.motor_asyncio as motor
 try:
     import pymysql.cursors
     import psycopg2
-    from pymongo import MongoClient
-    import motor.motor_asyncio as motor
 except ImportError:
     pass
 

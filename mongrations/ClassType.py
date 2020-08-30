@@ -1,6 +1,9 @@
 from pymongo.database import Database
 from pymysql.connections import Connection
-from psycopg2.extensions import cursor
+try:
+    from psycopg2.extensions import cursor
+except ImportError:
+    cursor = None
 from os import environ
 
 db_type = {
