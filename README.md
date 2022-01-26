@@ -37,8 +37,7 @@ class Mongration(Database):
         collection = self.db['members']
         collection.delete_one({'username': 'admin'})
 
-# By default this will run the UP operation.
-# To run DOWN operation use this function parameter: migrate_state = 'DOWN'
+
 Mongrations(Mongration, 'sync')
 ```
 3 . Run migrations
@@ -122,6 +121,7 @@ January 2022:
   - Removed the psycopg2 install step from setup.py
   - Simplified how the database connection strings are initialized
   - Inspect will now pretty print JSON structure and provide file system location
+  - Updated ```examples/``` directory
 
 August 2020:
   - Introduced the official version 1.0.0 of Mongrations!
