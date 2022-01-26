@@ -11,25 +11,33 @@ class MongrationsCli:
 
     @staticmethod
     def _command_line_interface(migrations: list, state: str):
+        success = True
         if len(migrations) == 0:
             print('No migrations to run.')
-            sys.exit()
+            sys.exit(100)
         print(f'{state.upper()}: Running {len(migrations)} migration{"" if len(migrations) <= 1 else "s"}...')
         for migration in migrations:
             command = shlex.split(f'python3 {migration}')
-            print(f'=== {basename(migration)} ===')
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, env=environ.copy())
             for line in io.TextIOWrapper(proc.stdout, encoding='utf8', newline=''):
-                print(line)
-        print('Migrations complete.')
+                if line.startswith('Error: '):
+                    print(line)
+                    success = False
+                else:
+                    print(f'=== {basename(migration)} ===')
+                    print(line)
+            if success is False:
+                break
+        if success:
+            print('Migrations complete.')
 
     def down(self):
-        environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
+        environ['MIGRATION_MIGRATE_STATE'] = 'DOWN'
         migrations = self._cache.migrations_file_list()
         self._command_line_interface(migrations, 'down')
 
     def migrate(self):
-        environ['MONGRATIONS_MIGRATE_STATE'] = 'UP'
+        environ['MIGRATION_MIGRATE_STATE'] = 'UP'
         migrations = self._cache.migrations_file_list()
         self._command_line_interface(migrations, 'migrate')
 
@@ -37,7 +45,6 @@ class MongrationsCli:
         self._cache.new_migration(name, directory)
 
     def undo(self):
-        environ['MONGRATIONS_MIGRATE_STATE'] = 'DOWN'
         migration = self._cache.undo_migration()
         self._command_line_interface([migration], 'undo')
     
@@ -52,13 +59,13 @@ class Mongrations:
         self.connection_object = connection_obj
         self.db_service = db_service
         try:
-            if environ['MONGRATIONS_MIGRATE_STATE'] == 'UP':
+            if environ['MIGRATION_MIGRATE_STATE'] == 'UP':
                 self._up()
-            elif environ['MONGRATIONS_MIGRATE_STATE'] == 'DOWN':
+            elif environ['MIGRATION_MIGRATE_STATE'] == 'DOWN':
                 self._down()
         except KeyError:
             print('Migrations must be run with CLI tool or MongrationsCli class.')
-            sys.exit()
+            sys.exit(99)
 
     def _up(self):
         self._migration_class._set(self.connection_object, self.db_service, self.state)

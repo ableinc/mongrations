@@ -58,24 +58,24 @@ class Connect:
             }
         }
         try:
-            for server, configs in connections.items():
-                if server == self._db_service:
-                    for value in connections[server].values():
-                        if value is None:
-                            raise KeyError
-                    self._service_selection = connections[server]
-            if self._service_selection is None:
-                raise KeyError
+            conn = connections[self._db_service]
+            if None in conn.values() or conn == None:
+                raise ValueError
+            self._service_selection = conn
         except KeyError:
-            print('All database configurations required.')
-            sys.exit(1)
+            print('Error: The database service {} is not supported.'.format(self._db_service))
+            return False
+        except ValueError:
+            print('Error: All database connection strings are required.')
+            return False
+        return True
 
     def _set(self, connection_object, db_service, state):
         self._connection_object = connection_object if not None else {}
         self._db_service = db_service
         self._state = state
-        self._connection()
-        self._get_db()
+        if self._connection():
+            self._get_db()
 
     def _get_db(self):
         db_option = {

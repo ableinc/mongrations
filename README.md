@@ -37,7 +37,8 @@ class Mongration(Database):
         collection = self.db['members']
         collection.delete_one({'username': 'admin'})
 
-
+# By default this will run the UP operation.
+# To run DOWN operation use this function parameter: migrate_state = 'DOWN'
 Mongrations(Mongration, 'sync')
 ```
 3 . Run migrations
@@ -51,11 +52,14 @@ pip install --upgrade mongrations
 ```
 or install locally
 ```bash
+git clone https://github.com/ableinc/mongrations.git
+cd mongrations
+python -m pip install -r requirements.txt
 python setup.py install
 ```
 
 # Use
-Mongrations comes with a CLI Tool as well as a class for a pythonic migration approach. PyMongo, PyMySQL & Psycopg2 are used under
+Mongrations comes with a CLI Tool and an import class for a pythonic migration approach. PyMongo, PyMySQL & Psycopg2 are used under
 the hood, so follow <a href="https://api.mongodb.com/python/current/tutorial.html#getting-a-collection">PyMongo</a>'s,
 <a href="https://github.com/PyMySQL/PyMySQL">PyMySQL</a>'s, or <a href="https://github.com/psycopg/psycopg2">Psycopg2</a>'s documentation 
 for instructions on how to create your migrations. For the environment variable tool used in this application, follow 
@@ -108,7 +112,17 @@ Please report all issues to repo.
 You can install psycopg2 from source via setup.py; python setup.py develop. Follow prompts.
 You will need root access to development machine to install this tool.
 
+You **MUST** have write access to your file system in order to use this application.
+
 # Changelog
+January 2022:
+  - Squashed bugs
+  - Mongrations can now run on Linux
+  - Default: stdout error output if error occurs during caching operation
+  - Removed the psycopg2 install step from setup.py
+  - Simplified how the database connection strings are initialized
+  - Inspect will now pretty print JSON structure and provide file system location
+
 August 2020:
   - Introduced the official version 1.0.0 of Mongrations!
   - Rewrote command line tool; much easier and intuiative

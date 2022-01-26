@@ -1,5 +1,7 @@
 try:
     from mongrations.connect import Connect
+    import sys
+    import psycopg2
 except ImportError:
     from .connect import Connect
 
@@ -16,7 +18,7 @@ class Database(Connect):
     def _alert(self, func_name, append=''):
         if self._db_service == 'mongo':
             print(f'Error: {func_name}() cannot be used with MongoDB {append if not "" else ""}.')
-            sys.exit()
+            sys.exit(101)
 
     def create_database(self, database_name):
         self._alert(self.create_database.__name__)
@@ -125,7 +127,7 @@ class Database(Connect):
         finally:
             self.db.close()
     
-    def raw(raw_sql):
+    def raw(self, raw_sql):
         try:
             with self.db.cursor() as cursor:
                 # Delete a record

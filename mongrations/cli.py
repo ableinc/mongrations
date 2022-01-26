@@ -1,4 +1,4 @@
-import click, sys
+import click
 try:
     from mongrations.main import MongrationsCli
     from mongrations.version import __version__

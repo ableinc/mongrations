@@ -2,7 +2,7 @@ from mongrations import Mongrations, Database
 from pydotenvs import load_env, load_env_object
 
 load_env('.env-example')  # by default it looks for .env in the current directory
-# config = load_env_object()  # connect via dictionary of environment variables [ i.e Mongrations(config) ]
+# connection_object = load_env_object()  # connect via dictionary of environment variables [ i.e Mongrations(config) ]
 
 
 class Mongration(Database):
@@ -24,4 +24,5 @@ class Mongration(Database):
         self.drop_table('users')
 
 
+# To use connection object (parameter): connection_obj = connection_object
 Mongrations(Mongration, db_service='mysql')

@@ -1,6 +1,6 @@
-from pymongo.database import Database
 from pymysql.connections import Connection
 try:
+    from pymongo.database import Database
     from psycopg2.extensions import cursor
 except ImportError:
     cursor = None

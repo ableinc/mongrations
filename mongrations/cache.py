@@ -5,13 +5,14 @@ import json
 from datetime import datetime
 import uuid, pkg_resources
 from pathlib import Path
+import sys, getpass
 
 
 def get_filepath():
-    import sys, getpass
     filepath = {
         'darwin': Path(f'/Users/{getpass.getuser()}/.mongrations/cache.json'),
-        'windows': Path('C:/Users/Programs Files/.mongrations/cache.json')
+        'win32': Path('C:/Users/Programs Files/.mongrations/cache.json'),
+        'linux': Path(f'/home/{getpass.getuser()}/.mongrations/cache.json')
     }.get(sys.platform)
     if not path.isdir(filepath.parent):
         try:
@@ -47,10 +48,8 @@ class Cache:
         except json.decoder.JSONDecodeError:
             try:
                 remove(self._file_path)
-            except OSError:
-                pass
-            if self._verbose:
-                print(f'{self._file_path} could not be saved. Internal error occurred when creating JSON object.')
+            except OSError as error:
+                print(f'{self._file_path} could not be saved. Internal error occurred when creating JSON object. Reason: {error}')
 
     def _collect_meta_data(self, data, migration_name=''):
         new_data = data
@@ -63,17 +62,17 @@ class Cache:
             new_data.update({'migrations': old_entries})
 
         if len(new_data['migrations']) >= 1:
-            new_data.update({'last_migration': new_data['migrations'][-1]})
-        new_data.update({'total_migrations': len(new_data['migrations'])})
+            new_data.update({'lastMigration': new_data['migrations'][-1]})
+        new_data.update({'totalMigrations': len(new_data['migrations'])})
         new_data.update({'updatedAt': str(datetime.now())})
         return new_data
 
     def _initial_write(self):
         data = {
-                  "total_migrations": 0,
+                  "totalMigrations": 0,
                   "createdAt": "",
                   "updatedAt": "",
-                  "last_migration": "",
+                  "lastMigration": "",
                   "migrations": []
                 }
         self._write_file_obj(data)
@@ -81,21 +80,21 @@ class Cache:
     def _file_system_check(self):
         file_obj = self._get_file_object()
         updated_migrations_list = file_obj['migrations']
-        updated_last_migration = file_obj['last_migration']
+        updated_lastMigration = file_obj['lastMigration']
         for mongration in file_obj['migrations']:
             if not path.isfile(mongration):
                 updated_migrations_list.remove(mongration)
-                if file_obj['last_migration'] == mongration:
-                    updated_last_migration = ''
+                if file_obj['lastMigration'] == mongration:
+                    updated_lastMigration = ''
         file_obj['migrations'] = updated_migrations_list
-        file_obj['last_migration'] = updated_last_migration
+        file_obj['lastMigration'] = updated_lastMigration
         self._write_file_obj(file_obj)
 
     def new_migration(self, name: str, directory):
         try:
             makedirs(path.join(getcwd(), directory))
         except FileExistsError:
-            pass
+            print('Warning: Migration name already exists. File will still be created.\n')
         name = str(uuid.uuid4())[:16] + '-' + name + '.py'
         migration_path = path.join(getcwd(), directory + '/' + name)
         reference_file = open(self._reference_file, 'r', encoding='utf-8')
@@ -110,7 +109,7 @@ class Cache:
         if remove_migration:
             cache['migrations'] = cache['migrations'].remove(cache.index(cache['migrations'][-1]))
             self._write_file_obj(cache)
-        return cache['last_migration']
+        return cache['lastMigration']
 
     def migrations_file_list(self):
         cache = self._get_file_object()
@@ -119,4 +118,5 @@ class Cache:
     def inspect_cache(self):
         self._file_system_check()
         cache = self._get_file_object()
-        print(cache)
+        print(json.dumps(cache, indent=2, sort_keys=False))
+        print('File location: ', self._file_path)
