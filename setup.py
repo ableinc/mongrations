@@ -17,7 +17,7 @@ setup(
     version=__version__,
     author="AbleInc - Jaylen Douglas",
     author_email="douglas.jaylen@gmail.com",
-    description="Mongrations; a database migration tool for Python 3.6 and above.",
+    description="Mongrations; a database independent migration and seeding tool for python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ableinc/mongrations",
@@ -35,10 +35,17 @@ setup(
         [console_scripts]
         mongrations=mongrations.cli:cli
     ''',
-    install_requires=['Click', 'motor', 'pydotenvs', 'pymongo', 'PyMySQL', 'requests'],
+    install_requires=['Click', 'motor', 'pydotenvs', 'pymongo', 'PyMySQL', 'requests', 'psycopg[binary,pool]'],
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3 :: Only",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Operating System :: OS Independent"
     ],
 )

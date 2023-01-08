@@ -3,17 +3,12 @@ import os.path as path
 from os import remove, makedirs, getcwd
 import json
 from datetime import datetime
-import uuid, pkg_resources
+import time, pkg_resources
 from pathlib import Path
-import sys, getpass
 
 
 def get_filepath():
-    filepath = {
-        'darwin': Path(f'/Users/{getpass.getuser()}/.mongrations/cache.json'),
-        'win32': Path('C:/Users/Programs Files/.mongrations/cache.json'),
-        'linux': Path(f'/home/{getpass.getuser()}/.mongrations/cache.json')
-    }.get(sys.platform)
+    filepath = Path(path.join(getcwd(), "migrations", ".cache.json"))
     if not path.isdir(filepath.parent):
         try:
             makedirs(filepath.parent)
@@ -92,15 +87,20 @@ class Cache:
 
     def new_migration(self, name: str, directory):
         try:
-            makedirs(path.join(getcwd(), directory))
+            d = path.join(getcwd(), directory)
+            if not path.isdir(d):
+                makedirs()
         except FileExistsError:
             print('Warning: Migration name already exists. File will still be created.\n')
-        name = str(uuid.uuid4())[:16] + '-' + name + '.py'
+        uuid = str(time.time())[:str(time.time()).index('.')]
+        _name_reference = name
+        name = name + '_' + uuid + '.py'
         migration_path = path.join(getcwd(), directory + '/' + name)
-        reference_file = open(self._reference_file, 'r', encoding='utf-8')
-        with open(migration_path, 'w', encoding='utf-8') as migration_file:
-            migration_file.write(reference_file.read())
-        reference_file.close()
+        if path.isfile(migration_path):
+            self.new_migration(_name_reference, directory)
+        with open(self._reference_file, 'r', encoding='utf-8') as reference_file:
+            with open(migration_path, 'w', encoding='utf-8') as migration_file:
+                migration_file.write(reference_file.read())
         self._write_file_obj(self._get_file_object(), migration_path)
         print(f'Created new migration: {path.basename(migration_path)}')
 

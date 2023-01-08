@@ -1,8 +1,4 @@
 from mongrations import Mongrations, Database
-from pydotenvs import load_env
-
-load_env()
-
 
 class Mongration(Database):
     def __init__(self):
