@@ -148,7 +148,7 @@ You **MUST** have write access to your file system to use this application.
 
 ##  Changelog
 
-January 2033 - Version 1.1.0:
+January 2023 - Version 1.1.0:
   - Fixed bug with CLI tool where directory argument wasn't being passed properly to the migrate function. 
   - The CLI tool has new arguments with better helper descriptions
   - The database connection class has been updated to provide more enhances connection strings
