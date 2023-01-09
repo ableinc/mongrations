@@ -19,7 +19,7 @@ except ImportError:
 """
 class Connect:
     def __init__(self):
-        self._connection_object = None
+        self._connection_object = {}
         self._db_service = None
         self._service_selection = None
         self.db = None
@@ -27,34 +27,27 @@ class Connect:
 
     def _connection(self):
         connections = {
-            'mongo': {
-                'host': environ.get('MONGO_HOST', None) if not None else self._connection_object.get('MONGO_HOST',
-                                                                                                     None),
-                'port': environ.get('MONGO_PORT', 27017) if not None else self._connection_object.get('MONGO_PORT',
-                                                                                                      None),
-                'db': environ.get('MONGO_DB', None) if not None else self._connection_object.get('MONGO_DB', None)
+            'mongodb': {
+                'host': environ.get('MONGO_HOST', None) if self._connection_object.get('MONGO_HOST', None) is None else self._connection_object.get('MONGO_HOST', None),
+                'port': environ.get('MONGO_PORT', 27017) if self._connection_object.get('MONGO_PORT', 27017) is None else self._connection_object.get('MONGO_PORT', 27017),
+                'user': environ.get('MONGO_USER', None) if self._connection_object.get('MONGO_USER', None) is None else self._connection_object.get('MONGO_USER', None),
+                'password': environ.get('MONGO_PASSWORD', None) if self._connection_object.get('MONGO_PASSWORD', None) is None else self._connection_object.get('MONGO_PASSWORD', None),
+                'db': environ.get('MONGO_DB_NAME', None) if self._connection_object.get('MONGO_DB_NAME', None) is None else self._connection_object.get('MONGO_DB_NAME', None),
+                'authSource': environ.get('MONGO_AUTH_SOURCE', 'admin') if self._connection_object.get('MONGO_AUTH_SOURCE', 'admin') is None else self._connection_object.get('MONGO_AUTH_SOURCE', 'admin')
             },
             'mysql': {
-                'host': environ.get('MYSQL_HOST', None) if not None else self._connection_object.get('MYSQL_HOST',
-                                                                                                     None),
-                'user': environ.get('MYSQL_USER', None) if not None else self._connection_object.get('MYSQL_USER',
-                                                                                                     None),
-                'password': environ.get('MYSQL_PASSWORD', None) if not None else self._connection_object.get(
-                    'MYSQL_PASSWORD', None),
-                'port': environ.get('MYSQL_PORT', 3306) if not None else self._connection_object.get('MYSQL_PORT',
-                                                                                                     None),
-                'db': environ.get('MYSQL_DB', None) if not None else self._connection_object.get('MYSQL_DB', None)
+                'host': environ.get('MYSQL_HOST', None) if self._connection_object.get('MYSQL_HOST', None) is None else self._connection_object.get('MYSQL_HOST', None),
+                'user': environ.get('MYSQL_USER', None) if self._connection_object.get('MYSQL_USER', None) is None else self._connection_object.get('MYSQL_USER', None),
+                'password': environ.get('MYSQL_PASSWORD', None) if self._connection_object.get('MYSQL_PASSWORD', None) is None else self._connection_object.get('MYSQL_PASSWORD', None),
+                'port': environ.get('MYSQL_PORT', 3306) if self._connection_object.get('MYSQL_PORT', 3306) is None else self._connection_object.get('MYSQL_PORT', 3306),
+                'db': environ.get('MYSQL_DB_NAME', None) if self._connection_object.get('MYSQL_DB_NAME', None) is None else self._connection_object.get('MYSQL_DB_NAME', None)
             },
             'postgres': {
-                'host': environ.get('POSTGRES_HOST', None) if not None else self._connection_object.get('POSTGRES_HOST',
-                                                                                                        None),
-                'user': environ.get('POSTGRES_USER', None) if not None else self._connection_object.get('POSTGRES_USER',
-                                                                                                        None),
-                'password': environ.get('POSTGRES_PASSWORD', None) if not None else self._connection_object.get(
-                    'POSTGRES_PASSWORD', None),
-                'port': environ.get('POSTGRES_PORT', 5432) if not None else self._connection_object.get('POSTGRES_PORT',
-                                                                                                        None),
-                'db': environ.get('POSTGRES_DB', None) if not None else self._connection_object.get('POSTGRES_DB', None)
+                'host': environ.get('POSTGRES_HOST', None) if self._connection_object.get('POSTGRES_HOST', None) is None else self._connection_object.get('POSTGRES_HOST', None),
+                'user': environ.get('POSTGRES_USER', None) if self._connection_object.get('POSTGRES_USER', None) is None else self._connection_object.get('POSTGRES_USER', None),
+                'password': environ.get('POSTGRES_PASSWORD', None) if self._connection_object.get('POSTGRES_PASSWORD', None) is None else self._connection_object.get('POSTGRES_PASSWORD', None),
+                'port': environ.get('POSTGRES_PORT', 5432) if self._connection_object.get('POSTGRES_PORT', 5432) is None else self._connection_object.get('POSTGRES_PORT', 5432),
+                'db': environ.get('POSTGRES_DB_NAME', None) if self._connection_object.get('POSTGRES_DB_NAME', None) is None else self._connection_object.get('POSTGRES_DB_NAME', None)
             }
         }
         try:
@@ -79,7 +72,7 @@ class Connect:
 
     def _get_db(self):
         db_option = {
-            'mongo': {
+            'mongodb': {
                 'sync': self._mongo_sync,
                 'async': self._mongo_async
             },
@@ -93,11 +86,17 @@ class Connect:
 
     def _mongo_async(self):
         mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
+        authSource = self._service_selection.get("authSource", False)
+        if authSource and authSource != 'None':
+            mongo_url = mongo_url + f'/?authSource={authSource}'
         client = motor.AsyncIOMotorClient(mongo_url)
         return client[self._service_selection["db"]]
 
     def _mongo_sync(self):
-        mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
+        mongo_url = f'mongodb://{self._service_selection["user"]}:{self._service_selection["password"]}@{self._service_selection["host"]}:{self._service_selection["port"]}'
+        authSource = self._service_selection.get("authSource", False)
+        if authSource and authSource != 'None':
+            mongo_url = mongo_url + f'/?authSource={authSource}'
         client = MongoClient(mongo_url)
         return client[self._service_selection["db"]]
 
@@ -116,4 +115,3 @@ class Connect:
         config = self._service_selection
         conn = psycopg2.connect(host=config['host'], database=config['db'], user=config['user'], password=config['password'])
         return conn
-

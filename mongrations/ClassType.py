@@ -9,7 +9,7 @@ except ImportError:
 from os import environ
 
 db_type = {
-    'mongo': Database,
+    'mongodb': Database,
     'mysql': Connection,
     'postgres': cursor
 }.get(environ.get('MONGRATIONS_CLASS_TYPE'))

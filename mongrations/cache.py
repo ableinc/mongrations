@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 import time, pkg_resources
 from pathlib import Path
+import sys
 
 
 def get_filepath():
@@ -20,9 +21,14 @@ def get_filepath():
 class Cache:
     def __init__(self, verbose: bool = False):
         self._verbose = verbose
-        self._file_path = get_filepath()
+        self._file_path = None
         self._reference_file = pkg_resources.resource_filename('mongrations', 'data/template.txt')
-        self.initial = None
+        self.initial = False
+    
+    def _set_file_path(self):
+        self._file_path = get_filepath()
+    
+    def _do_inital_write(self):
         if not path.isfile(self._file_path):
             self.initial = True
             self._initial_write()
@@ -31,6 +37,8 @@ class Cache:
         self._file_system_check()
 
     def _get_file_object(self):
+        if self._file_path is None:
+            raise FileNotFoundError
         with open(self._file_path, 'r', encoding='utf-8') as reader:
             return json.load(reader)
 
@@ -85,38 +93,54 @@ class Cache:
         file_obj['lastMigration'] = updated_lastMigration
         self._write_file_obj(file_obj)
 
-    def new_migration(self, name: str, directory):
+    def new_migration(self, name: str, directory: str):
+        if '.py' in name:
+            name = name.replace('.py', '')
         try:
             d = path.join(getcwd(), directory)
             if not path.isdir(d):
-                makedirs()
+                makedirs(d)
         except FileExistsError:
             print('Warning: Migration name already exists. File will still be created.\n')
-        uuid = str(time.time())[:str(time.time()).index('.')]
+        timestamp = str(time.time())[:str(time.time()).index('.')]
         _name_reference = name
-        name = name + '_' + uuid + '.py'
+        name = name + '_' + timestamp + '.py'
         migration_path = path.join(getcwd(), directory + '/' + name)
+        migration_path_relative = path.join(directory + '/' + name)
         if path.isfile(migration_path):
             self.new_migration(_name_reference, directory)
         with open(self._reference_file, 'r', encoding='utf-8') as reference_file:
-            with open(migration_path, 'w', encoding='utf-8') as migration_file:
+            with open(migration_path_relative, 'w', encoding='utf-8') as migration_file:
                 migration_file.write(reference_file.read())
-        self._write_file_obj(self._get_file_object(), migration_path)
-        print(f'Created new migration: {path.basename(migration_path)}')
+        self._write_file_obj(self._get_file_object(), migration_path_relative)
+        print(f'Created new migration file: {path.basename(migration_path)}')
 
     def undo_migration(self, remove_migration: bool = False):
-        cache = self._get_file_object()
-        if remove_migration:
-            cache['migrations'] = cache['migrations'].remove(cache.index(cache['migrations'][-1]))
-            self._write_file_obj(cache)
-        return cache['lastMigration']
+        try:
+            cache = self._get_file_object()
+            if remove_migration:
+                cache['migrations'] = cache['migrations'][:-1]
+                self._write_file_obj(cache)
+            return cache['lastMigration']
+        except FileNotFoundError:
+            print('Cannot undo last migration. No migrations have been created.')
+            sys.exit(97)
 
-    def migrations_file_list(self):
-        cache = self._get_file_object()
-        return cache['migrations']
+    def migrations_file_list(self, last_migration=False):
+        try:
+            cache = self._get_file_object()
+            if last_migration:
+                return [cache['lastMigration']]
+            return cache['migrations']
+        except FileNotFoundError:
+            print('Cannot do operation. No migrations have been created.')
+            sys.exit(96)
 
     def inspect_cache(self):
-        self._file_system_check()
-        cache = self._get_file_object()
-        print(json.dumps(cache, indent=2, sort_keys=False))
-        print('File location: ', self._file_path)
+        try:
+            self._file_system_check()
+            cache = self._get_file_object()
+            print(json.dumps(cache, indent=2, sort_keys=False))
+            print('File location: ', self._file_path)
+        except FileNotFoundError:
+            print('Cannot inspect. No migrations have been created.')

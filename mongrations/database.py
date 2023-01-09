@@ -6,17 +6,15 @@ except ImportError:
     from .connect import Connect
 
 """
-    Updated: August 2020
-
-    This class is a database tool with predefined functions for executing operations on the MySQL or Postgres server.
-    This class is not used when writing to MongoDB. If using MongoDB, refer to their PyMongo or Motor documentation.
+    This class is a database tool with predefined functions for executing operations on MySQL or Postgres databases.
+    This class is not used when writing to MongoDB. If using MongoDB, refer to the PyMongo or Motor documentation.
 """
 class Database(Connect):
     def __init__(self):
         super(Connect, self).__init__()
 
     def _alert(self, func_name, append=''):
-        if self._db_service == 'mongo':
+        if self._db_service == 'mongodb':
             print(f'Error: {func_name}() cannot be used with MongoDB {append if not "" else ""}.')
             sys.exit(101)
 
@@ -24,7 +22,6 @@ class Database(Connect):
         self._alert(self.create_database.__name__)
         try:
             with self.db.cursor() as cursor:
-                # Create a new record
                 sql = f"CREATE DATABASE `{database_name}`"
                 cursor.execute(sql)
 
@@ -38,7 +35,6 @@ class Database(Connect):
         self._alert(self.create_table.__name__)
         try:
             with self.db.cursor() as cursor:
-                # Create a new record
                 sql = f'CREATE TABLE `{table_name}` ( '
                 for column_name, column_type in column_info.items():
                     sql += f'`{column_name}` {column_type}, '
@@ -55,7 +51,6 @@ class Database(Connect):
         self._alert(self.drop_table.__name__)
         try:
             with self.db.cursor() as cursor:
-                # Create a new record
                 sql = f"DROP TABLE `{table_name}`"
                 cursor.execute(sql)
 
@@ -69,7 +64,6 @@ class Database(Connect):
         self._alert(self.add_column.__name__)
         try:
             with self.db.cursor() as cursor:
-                # Create a new record
                 sql = f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {data_type}"
                 cursor.execute(sql)
 
@@ -97,7 +91,6 @@ class Database(Connect):
         self._alert(self.delete_from.__name__, 'or MySQL (Postgres Only)')
         try:
             with self.db.cursor() as cursor:
-                # Delete a record
                 sql = f"DELETE FROM `{table_name}` WHERE `{column_name}` = {query}"
                 cursor.execute(sql)
 
@@ -130,7 +123,6 @@ class Database(Connect):
     def raw(self, raw_sql):
         try:
             with self.db.cursor() as cursor:
-                # Delete a record
                 sql = f"{raw_sql}"
                 cursor.execute(sql)
 

@@ -1,6 +1,6 @@
 from mongrations.cache import Cache
-from os import environ
-from os.path import basename
+from os import environ, getcwd, remove
+from os.path import basename, join
 import subprocess, shlex, io, sys
 
 
@@ -8,6 +8,7 @@ import subprocess, shlex, io, sys
 class MongrationsCli:
     def __init__(self):
         self._cache = Cache()
+        self._cache._set_file_path()
 
     @staticmethod
     def _command_line_interface(migrations: list, state: str):
@@ -17,7 +18,8 @@ class MongrationsCli:
             sys.exit(100)
         print(f'{state.upper()}: Running {len(migrations)} migration{"" if len(migrations) <= 1 else "s"}...')
         for migration in migrations:
-            command = shlex.split(f'python3 {migration}')
+            migration_file_path = join(getcwd(), migration)
+            command = shlex.split(f'python3 {migration_file_path}')
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, env=environ.copy())
             for line in io.TextIOWrapper(proc.stdout, encoding='utf8', newline=''):
                 if line.startswith('Error: '):
@@ -31,9 +33,9 @@ class MongrationsCli:
         if success:
             print('Migrations complete.')
 
-    def down(self):
+    def down(self, last_migration_only=False):
         environ['MIGRATION_MIGRATE_STATE'] = 'DOWN'
-        migrations = self._cache.migrations_file_list()
+        migrations = self._cache.migrations_file_list(last_migration=last_migration_only)
         self._command_line_interface(migrations, 'down')
 
     def migrate(self):
@@ -41,19 +43,23 @@ class MongrationsCli:
         migrations = self._cache.migrations_file_list()
         self._command_line_interface(migrations, 'migrate')
 
-    def create(self, directory='migrations', name='-no-name-migration'):
+    def create(self, directory='migrations', name='no_name_migration'):
+        self._cache._do_inital_write()
         self._cache.new_migration(name, directory)
 
     def undo(self):
+        environ['MIGRATION_MIGRATE_STATE'] = 'UNDO'
         migration = self._cache.undo_migration()
         self._command_line_interface([migration], 'undo')
+        remove(migration)
+        self._cache._file_system_check()
     
     def inspector(self):
         self._cache.inspect_cache()
 
 
 class Mongrations:
-    def __init__(self, migration_class, state: str = 'sync', db_service: str = 'mongo', connection_obj: dict = None):
+    def __init__(self, migration_class, state: str = 'sync', db_service: str = 'mongodb', connection_obj: dict = {}):
         self._migration_class = migration_class()
         self.state = state
         self.connection_object = connection_obj
@@ -61,7 +67,7 @@ class Mongrations:
         try:
             if environ['MIGRATION_MIGRATE_STATE'] == 'UP':
                 self._up()
-            elif environ['MIGRATION_MIGRATE_STATE'] == 'DOWN':
+            elif environ['MIGRATION_MIGRATE_STATE'] == 'DOWN' or environ['MIGRATION_MIGRATE_STATE'] == 'UNDO':
                 self._down()
         except KeyError:
             print('Migrations must be run with CLI tool or MongrationsCli class.')
