@@ -1,0 +1,74 @@
+{
+    "development": {
+        "mongodb": {
+            "HOST": "localhost",
+            "PORT": 27017,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations",
+            "AUTH_SOURCE": "admin"
+        },
+        "mysql": {
+            "HOST": "localhost",
+            "PORT": 3306,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations"
+        },
+        "postgres": {
+            "HOST": "localhost",
+            "PORT": 5432,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations"
+        }
+    },
+    "staging": {
+        "mongodb": {
+            "HOST": "localhost",
+            "PORT": 27017,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations",
+            "AUTH_SOURCE": "admin"
+        },
+        "mysql": {
+            "HOST": "localhost",
+            "PORT": 3306,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations"
+        },
+        "postgres": {
+            "HOST": "localhost",
+            "PORT": 5432,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations"
+        }
+    },
+    "production": {
+        "mongodb": {
+            "HOST": "localhost",
+            "PORT": 27017,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations",
+            "AUTH_SOURCE": "admin"
+        },
+        "mysql": {
+            "HOST": "localhost",
+            "PORT": 3306,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations"
+        },
+        "postgres": {
+            "HOST": "localhost",
+            "PORT": 5432,
+            "USER": "root",
+            "PASSWORD": "password",
+            "DB_NAME": "mongrations"
+        }
+    }
+}

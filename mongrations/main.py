@@ -56,6 +56,9 @@ class MongrationsCli:
     
     def inspector(self):
         self._cache.inspect_cache()
+    
+    def create_mongration_file(self):
+        self._cache.create_migration_file()
 
 
 class Mongrations:

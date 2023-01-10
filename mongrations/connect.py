@@ -1,4 +1,5 @@
 from os import environ
+import sys
 try:
     from pymongo import MongoClient
     import motor.motor_asyncio as motor
@@ -57,18 +58,18 @@ class Connect:
             self._service_selection = conn
         except KeyError:
             print('Error: The database service {} is not supported.'.format(self._db_service))
-            return False
+            sys.exit(95)
         except ValueError:
             print('Error: All database connection strings are required.')
-            return False
+            sys.exit(95)
         return True
 
     def _set(self, connection_object, db_service, state):
         self._connection_object = connection_object if not None else {}
         self._db_service = db_service
         self._state = state
-        if self._connection():
-            self._get_db()
+        self._connection()
+        self._get_db()
 
     def _get_db(self):
         db_option = {
@@ -85,18 +86,18 @@ class Connect:
             self.db = db_option()
 
     def _mongo_async(self):
-        mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}'
+        mongo_url = f'mongodb://{self._service_selection["host"]}:{self._service_selection["port"]}/?connectTimeoutMS=15000'
         authSource = self._service_selection.get("authSource", False)
         if authSource and authSource != 'None':
-            mongo_url = mongo_url + f'/?authSource={authSource}'
+            mongo_url = mongo_url + f'&authSource={authSource}'
         client = motor.AsyncIOMotorClient(mongo_url)
         return client[self._service_selection["db"]]
 
     def _mongo_sync(self):
-        mongo_url = f'mongodb://{self._service_selection["user"]}:{self._service_selection["password"]}@{self._service_selection["host"]}:{self._service_selection["port"]}'
+        mongo_url = f'mongodb://{self._service_selection["user"]}:{self._service_selection["password"]}@{self._service_selection["host"]}:{self._service_selection["port"]}/?connectTimeoutMS=15000'
         authSource = self._service_selection.get("authSource", False)
         if authSource and authSource != 'None':
-            mongo_url = mongo_url + f'/?authSource={authSource}'
+            mongo_url = mongo_url + f'&authSource={authSource}'
         client = MongoClient(mongo_url)
         return client[self._service_selection["db"]]
 
@@ -106,7 +107,7 @@ class Connect:
                                      user=config['user'],
                                      password=config['password'],
                                      db=config['db'],
-                                     port=config['port'],
+                                     port=int(config['port']),
                                      charset='utf8mb4',
                                      cursorclass=pymysql.cursors.DictCursor)
         return connection

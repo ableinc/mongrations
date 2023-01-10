@@ -1,0 +1,74 @@
+{
+    "development": {
+        "mongodb": {
+            "HOST": "",
+            "PORT": 27017,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": "",
+            "AUTH_SOURCE": "admin"
+        },
+        "mysql": {
+            "HOST": "",
+            "PORT": 3306,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": ""
+        },
+        "postgres": {
+            "HOST": "",
+            "PORT": 5432,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": ""
+        }
+    },
+    "staging": {
+        "mongodb": {
+            "HOST": "",
+            "PORT": 27017,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": "",
+            "AUTH_SOURCE": "admin"
+        },
+        "mysql": {
+            "HOST": "",
+            "PORT": 3306,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": ""
+        },
+        "postgres": {
+            "HOST": "",
+            "PORT": 5432,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": ""
+        }
+    },
+    "production": {
+        "mongodb": {
+            "HOST": "",
+            "PORT": 27017,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": "",
+            "AUTH_SOURCE": "admin"
+        },
+        "mysql": {
+            "HOST": "",
+            "PORT": 3306,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": ""
+        },
+        "postgres": {
+            "HOST": "",
+            "PORT": 5432,
+            "USER": "",
+            "PASSWORD": "",
+            "DB_NAME": ""
+        }
+    }
+}

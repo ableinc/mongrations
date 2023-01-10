@@ -148,6 +148,17 @@ You **MUST** have write access to your file system to use this application.
 
 ##  Changelog
 
+January 2023 - Version 1.1.1:
+  - You can now use the ```mongrationFile.json``` file to add database connection variables. You can refer to an example of this file [here](mongrationFile.json)
+    - You can specify the environment with ```--migrationfile``` (default env is development):
+    ```bash
+    mongrations migrate --file mongrationFile.json --env development
+    ```
+  - The CLI tool can generate the ```mongrationFile.json``` file for you. Run this command:
+    ```bash
+    mongrations file
+    ```
+
 January 2023 - Version 1.1.0:
   - Fixed bug with CLI tool where directory argument wasn't being passed properly to the migrate function. 
   - The CLI tool has new arguments with better helper descriptions

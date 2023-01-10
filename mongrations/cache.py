@@ -23,6 +23,7 @@ class Cache:
         self._verbose = verbose
         self._file_path = None
         self._reference_file = pkg_resources.resource_filename('mongrations', 'data/template.txt')
+        self._mongration_file = pkg_resources.resource_filename('mongrations', 'data/mongrationFile.json')
         self.initial = False
     
     def _set_file_path(self):
@@ -134,7 +135,7 @@ class Cache:
             return cache['migrations']
         except FileNotFoundError:
             print('Cannot do operation. No migrations have been created.')
-            sys.exit(96)
+            sys.exit(97)
 
     def inspect_cache(self):
         try:
@@ -144,3 +145,13 @@ class Cache:
             print('File location: ', self._file_path)
         except FileNotFoundError:
             print('Cannot inspect. No migrations have been created.')
+    
+    def create_migration_file(self):
+        file_path = path.join(getcwd(), path.basename(self._mongration_file))
+        if path.isfile(file_path):
+            print('mongrationFile.json already exists at root.')
+            sys.exit(94)
+        with open(file_path, mode='w', encoding='utf-8') as mf:
+            with open(self._mongration_file, mode='r', encoding='utf-8') as open_mf:
+                data = json.load(open_mf)
+                mf.write(json.dumps(data, indent=2))

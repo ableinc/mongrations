@@ -26,10 +26,10 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-      'mongrations': ['mongrations/data/template.txt']
+      'mongrations': ['mongrations/data/template.txt', 'mongrations/data/mongrationFile.json']
     },
     data_files=[
-        ('/mongrations/data', [path.join('mongrations/data', 'template.txt')])
+        ('/mongrations/data', [path.join('mongrations/data', 'template.txt'), path.join('mongrations/data', 'mongrationFile.json')])
     ],
     entry_points='''
         [console_scripts]
