@@ -22,7 +22,7 @@ class Database(Connect):
         self._alert(self.create_database.__name__)
         try:
             with self.db.cursor() as cursor:
-                sql = f"CREATE DATABASE `{database_name}`"
+                sql = f"CREATE DATABASE {database_name}"
                 cursor.execute(sql)
         except (Exception, psycopg.DatabaseError) as error:
             print('Error: ', error)
@@ -44,7 +44,7 @@ class Database(Connect):
         self._alert(self.drop_table.__name__)
         try:
             with self.db.cursor() as cursor:
-                sql = f"DROP TABLE `{table_name}`"
+                sql = f"DROP TABLE {table_name}"
                 cursor.execute(sql)
         except (Exception, psycopg.DatabaseError) as error:
             print('Error: ', error)
@@ -53,7 +53,7 @@ class Database(Connect):
         self._alert(self.add_column.__name__)
         try:
             with self.db.cursor() as cursor:
-                sql = f"ALTER TABLE `{table_name}` ADD COLUMN `{column_name}` {data_type}"
+                sql = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {data_type}"
                 cursor.execute(sql)
         except (Exception, psycopg.DatabaseError) as error:
             print('Error: ', error)
@@ -63,7 +63,7 @@ class Database(Connect):
         try:
             with self.db.cursor() as cursor:
                 # Create a new record
-                sql = f"ALTER TABLE `{table_name}` DROP COLUMN `{column_name}`"
+                sql = f"ALTER TABLE {table_name} DROP COLUMN {column_name}"
                 cursor.execute(sql)
         except (Exception, psycopg.DatabaseError) as error:
             print('Error: ', error)
@@ -72,7 +72,7 @@ class Database(Connect):
         self._alert(self.delete_from.__name__, 'or MySQL (Postgres Only)')
         try:
             with self.db.cursor() as cursor:
-                sql = f"DELETE FROM `{table_name}` WHERE `{column_name}` = {query}"
+                sql = f"DELETE FROM {table_name} WHERE {column_name} = {query}"
                 cursor.execute(sql)
         except (Exception, psycopg.DatabaseError) as error:
             print('Error: ', error)
@@ -81,13 +81,13 @@ class Database(Connect):
         self._alert(self.insert_into.__name__)
         try:
             with self.db.cursor() as cursor:
-                sql = f'INSERT INTO `{table_name}` ('
+                sql = f'INSERT INTO {table_name} ('
                 for column_name in column_info.keys():
-                    sql += f'`{column_name}`,'
+                    sql += f'{column_name},'
                 s_ql = sql[:-1]
                 s_ql += ') VALUES ('
                 for value in column_info.values():
-                    s_ql += f'`{value}`,'
+                    s_ql += f'{value},'
                 updated_sql = s_ql[:-1]
                 updated_sql += ')'
                 cursor.execute(updated_sql)

@@ -31,6 +31,21 @@ def add_credentials_to_application_environment(service: str, credentials: dict) 
         os.environ[f'{service_prefix}{key}'] = str(credentials[key])
 
 
+def mongration_file_operation(file, env, service):
+    try:
+        with open(os.path.join(os.getcwd(), file)) as mf:
+            mongration_file = json.load(mf)
+    except FileNotFoundError:
+        click.echo(f"The migration file, {file}, is not a file or is a directory.")
+        sys.exit(86)
+    try:
+        credentials = mongration_file[env][service]
+    except KeyError:
+        click.echo("KeyError: Confirm the service name and env are valid.")
+        sys.exit(86)
+    add_credentials_to_application_environment(service, credentials)
+
+
 @click.group()
 @click.version_option(version=__version__)
 def cli():
@@ -48,18 +63,7 @@ def migrate(file, env, service):
         click.echo("You must provide the service name.")
         sys.exit(86)
     if file is not None:
-        try:
-            with open(os.path.join(os.getcwd(), file)) as mf:
-                mongration_file = json.load(mf)
-        except FileNotFoundError:
-            click.echo(f"The migration file, {file}, is not a file or is a directory.")
-            sys.exit(86)
-        try:
-            credentials = mongration_file[env][service]
-        except KeyError:
-            click.echo("KeyError: Confirm the service name and env are valid.")
-            sys.exit(86)
-        add_credentials_to_application_environment(service, credentials)
+        mongration_file_operation(file, env, service)
     main.migrate()
 
 
@@ -79,11 +83,34 @@ def create(name, directory):
 
 
 @cli.command()
-def undo():
+@click.argument('filename', nargs=1)
+@click.option("--file", required=False, help="Pass a migration file with database credentials.")
+@click.option("--env", default="development", required=False, help="Application environment. This is used with --file.")
+@click.option("--service", required=False, help="The database service to use. Options: mongodb, mysql or postgres.")
+def down(filename, file, env, service):
+    """Run the down() method on a specified migration file"""
+    if file is not None and service is None:
+        click.echo("You must provide the service name.")
+        sys.exit(86)
+    if file is not None:
+        mongration_file_operation(file, env, service)
+    main.down(last_migration_only=False, specific_file=filename)
+
+
+@cli.command()
+@click.option("--file", required=False, help="Pass a migration file with database credentials.")
+@click.option("--env", default="development", required=False, help="Application environment. This is used with --file.")
+@click.option("--service", required=False, help="The database service to use. Options: mongodb, mysql or postgres.")
+def undo(file, env, service):
     """Undo the last migration. Undo will run the down() method on the last migration
     file created and delete the migration file."""
     value = click.prompt("Are you sure you want to undo? (Y/n) ")
     if value.lower() == 'y':
+        if file is not None and service is None:
+            click.echo("You must provide the service name.")
+            sys.exit(86)
+        if file is not None:
+            mongration_file_operation(file, env, service)
         main.undo()
 
 
@@ -95,10 +122,18 @@ def inspect():
 
 
 @cli.command()
+@click.option("--file", required=False, help="Pass a migration file with database credentials.")
+@click.option("--env", default="development", required=False, help="Application environment. This is used with --file.")
+@click.option("--service", required=False, help="The database service to use. Options: mongodb, mysql or postgres.")
 @click.option("--all", default=False, help="Run down() method all migration files. This will not delete the migration files.")
-def rollback(all):
+def rollback(file, env, service, all):
     """Run the down() method on the last migration file. If --all is True the down()
     method will run on all migration files."""
+    if file is not None and service is None:
+        click.echo("You must provide the service name.")
+        sys.exit(86)
+    if file is not None:
+        mongration_file_operation(file, env, service)
     if all:
         main.down()
     else:

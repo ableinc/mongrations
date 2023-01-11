@@ -33,9 +33,20 @@ class MongrationsCli:
         if success:
             print('Migrations complete.')
 
-    def down(self, last_migration_only=False):
+    def down(self, last_migration_only=False, specific_file=None):
+        specific_file_found = False
         environ['MIGRATION_MIGRATE_STATE'] = 'DOWN'
         migrations = self._cache.migrations_file_list(last_migration=last_migration_only)
+        if specific_file is not None:
+            for migration in migrations:
+                name = basename(migration).replace('.py', '')
+                if name == specific_file.replace('.py', ''):
+                    migrations = [migration]
+                    specific_file_found = True
+                    break
+            if not specific_file_found:
+                print(f'File not found: {specific_file}')
+                sys.exit(86)
         self._command_line_interface(migrations, 'down')
 
     def migrate(self):

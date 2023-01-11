@@ -136,17 +136,14 @@ MYSQL_PORT=3306
 
 Please report all issues to repo.
 
-## Notes
-
-To install psycopg2 source run:
-
-```bash
-python install_psycopg2.py
-```
-
 You **MUST** have write access to your file system to use this application.
 
 ##  Changelog
+
+January 2023 - Version 1.1.3:
+
+  - Updated: CLI tool to handle ```--mongrationFile``` for rollback and down command
+  - psycopg will be downloaded by the library. Installing from source is no longer an option.
 
 January 2023 - Version 1.1.2:
 
