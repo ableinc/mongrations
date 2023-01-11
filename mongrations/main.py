@@ -10,8 +10,8 @@ class MongrationsCli:
         self._cache = Cache()
         self._cache._set_file_path()
 
-    @staticmethod
-    def _command_line_interface(migrations: list, state: str):
+    def _command_line_interface(self, migrations: list, state: str):
+        sucessful_runs =[]
         success = True
         if len(migrations) == 0:
             print('No migrations to run.')
@@ -19,6 +19,9 @@ class MongrationsCli:
         print(f'{state.upper()}: Running {len(migrations)} migration{"" if len(migrations) <= 1 else "s"}...')
         for migration in migrations:
             migration_file_path = join(getcwd(), migration)
+            if self._cache.has_executed(migration_file_path):
+                print("Already ran migration.")
+                continue
             command = shlex.split(f'python3 {migration_file_path}')
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, env=environ.copy())
             for line in io.TextIOWrapper(proc.stdout, encoding='utf8', newline=''):
@@ -30,12 +33,28 @@ class MongrationsCli:
                     print(line)
             if success is False:
                 break
+        if len(sucessful_runs) > 0:
+            config_file = self._cache._get_file_object()
+            new_data = config_file['executed']
+            new_data.extend(sucessful_runs)
+            self._cache._write_file_obj(new_data)
         if success:
             print('Migrations complete.')
 
-    def down(self, last_migration_only=False):
+    def down(self, last_migration_only=False, specific_file=None):
+        specific_file_found = False
         environ['MIGRATION_MIGRATE_STATE'] = 'DOWN'
         migrations = self._cache.migrations_file_list(last_migration=last_migration_only)
+        if specific_file is not None:
+            for migration in migrations:
+                name = basename(migration).replace('.py', '')
+                if name == specific_file.replace('.py', ''):
+                    migrations = [migration]
+                    specific_file_found = True
+                    break
+            if not specific_file_found:
+                print(f'File not found: {specific_file}')
+                sys.exit(86)
         self._command_line_interface(migrations, 'down')
 
     def migrate(self):

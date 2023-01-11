@@ -86,6 +86,13 @@ def undo():
     if value.lower() == 'y':
         main.undo()
 
+@cli.command()
+@click.argument('filename', nargs=1)
+def down(filename):
+    """Run the down() method on a specified migration file"""
+    main.down(last_migration_only=False, specific_file=filename)
+
+
 
 @cli.command()
 def inspect():
