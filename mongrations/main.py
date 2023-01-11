@@ -77,7 +77,7 @@ class Mongrations:
         self._migration_class = migration_class()
         self.state = state
         self.connection_object = connection_obj
-        self.db_service = db_service
+        self.db_service = environ.get('MONGRATIONS_SERVICE_NAME', db_service) 
         try:
             if environ['MIGRATION_MIGRATE_STATE'] == 'UP':
                 self._up()

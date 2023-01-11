@@ -140,6 +140,10 @@ You **MUST** have write access to your file system to use this application.
 
 ##  Changelog
 
+January 2023 - Version 1.1.4:
+
+  - Bugfix: CLI tool will now add service name to environment when using ```--mongrationFile.json```
+
 January 2023 - Version 1.1.3:
 
   - Updated: CLI tool to handle ```--mongrationFile``` for rollback and down command

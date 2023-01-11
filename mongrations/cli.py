@@ -27,8 +27,12 @@ def add_credentials_to_application_environment(service: str, credentials: dict) 
         "mysql": "MYSQL_",
         "postgres": "POSTGRES_"
     }.get(service, None)
+    if service_prefix is None:
+        click.echo('Invalid service name provided.')
+        sys.exit(86)
     for key in credentials:
         os.environ[f'{service_prefix}{key}'] = str(credentials[key])
+    os.environ['MONGRATIONS_SERVICE_NAME'] = service
 
 
 def mongration_file_operation(file, env, service):
