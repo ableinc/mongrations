@@ -77,7 +77,8 @@ class Cache:
                   "createdAt": "",
                   "updatedAt": "",
                   "lastMigration": "",
-                  "migrations": []
+                  "migrations": [],
+                  "executed": []
                 }
         self._write_file_obj(data)
 
@@ -121,6 +122,7 @@ class Cache:
             cache = self._get_file_object()
             if remove_migration:
                 cache['migrations'] = cache['migrations'][:-1]
+                cache['executed'].remove(cache['migrations'][-1])
                 self._write_file_obj(cache)
             return cache['lastMigration']
         except FileNotFoundError:
@@ -155,3 +157,10 @@ class Cache:
             with open(self._mongration_file, mode='r', encoding='utf-8') as open_mf:
                 data = json.load(open_mf)
                 mf.write(json.dumps(data, indent=2))
+    
+    def has_executed(self, filepath):
+        cache = self._get_file_object()
+        if filepath in cache['executed']:
+            return True
+        return False
+

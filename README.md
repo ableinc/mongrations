@@ -25,19 +25,19 @@ class Mongration(Database):
         super(Database, self).__init__()
 
     def up(self):
-        collection = self.db['members']
+        collection = self.db['moderators']
         data = {
             'accountId': 1,
-            'username': 'admin',
-            'email': 'admin@able.digital',
-            'firstName': 'Site',
-            'lastName': 'Owner'
+            'username': 'bot',
+            'email': 'bot@able.digital',
+            'firstName': 'Moderator',
+            'lastName': 'Bot'
         }
         collection.insert_one(data)
 
     def down(self):
-        collection = self.db['members']
-        collection.delete_one({'username': 'admin'})
+        collection = self.db['moderators']
+        collection.delete_one({'username': 'bot'})
 
 
 Mongrations(Mongration)
