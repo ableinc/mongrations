@@ -148,6 +148,11 @@ You **MUST** have write access to your file system to use this application.
 
 ##  Changelog
 
+January 2023 - Version 1.1.2:
+
+  - Bugfix: postgres connection library fix
+  - Bugfix: Database connection would close prematurely
+
 January 2023 - Version 1.1.1:
   - You can now use the ```mongrationFile.json``` file to add database connection variables. You can refer to an example of this file [here](mongrationFile.json)
     - You can specify the environment with ```--migrationfile``` (default env is development):

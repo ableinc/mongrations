@@ -4,7 +4,7 @@ try:
     from pymongo import MongoClient
     import motor.motor_asyncio as motor
     import pymysql.cursors
-    import psycopg2
+    import psycopg
 except ImportError:
     pass
 
@@ -114,5 +114,5 @@ class Connect:
 
     def _postgres(self):
         config = self._service_selection
-        conn = psycopg2.connect(host=config['host'], database=config['db'], user=config['user'], password=config['password'])
+        conn = psycopg.connect(host=config['host'], dbname=config['db'], user=config['user'], password=config['password'])
         return conn

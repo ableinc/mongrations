@@ -79,7 +79,9 @@ class Mongrations:
     def _up(self):
         self._migration_class._set(self.connection_object, self.db_service, self.state)
         self._migration_class.up()
+        self._migration_class._commit_and_close_connection()
 
     def _down(self):
         self._migration_class._set(self.connection_object, self.db_service, self.state)
         self._migration_class.down()
+        self._migration_class._commit_and_close_connection()
